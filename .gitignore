@@ -1,0 +1,13 @@
+
+*.pdb
+*.ilk
+*.dll
+*.obj
+*.tlog
+*.idb
+*.log
+*.ipch
+*.opendb
+*.db
+.vs/csgo-cheat/v16/.suo
+*.user
