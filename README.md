@@ -5,7 +5,7 @@ Another Counter-Strike: Global Offensive Hack
 Download or fork the project and run the solution with [Visual Studio](https://visualstudio.microsoft.com/)
 make sure your project is set to **Release** and **x86**
 
-If your don't have the time to build it yourself, go to the [Releases](https://github.com/T4zzuu/t4cheats/releases) for a binary.
+If you don't have the time to build it yourself, go to the [Releases](https://github.com/T4zzuu/t4cheats/releases) for a binary.
 
 # credits
 based on designer1337's ["csgo-cheat-base"](https://github.com/designer1337/csgo-cheat-base)
