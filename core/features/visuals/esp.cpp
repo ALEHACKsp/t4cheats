@@ -59,10 +59,17 @@ color get_color_from_health(int health, int alpha = 255)
 }
 
 RECT bbox;
+/*
+	BOX DIMENSIONS
+
+	left = x-coordinate top
+	top = y-coordinate top
+	right = x-coordinate bottom
+	bottom = y-coordinate bottom
+*/
 
 void draw_name(player_t* player, color color) {
-	static wchar_t name[128];
-	player_info_t info;
+	static wchar_t name[128]; player_info_t info;
 	interfaces::engine->get_player_info(player->index(), &info);
 	if (MultiByteToWideChar(CP_UTF8, 0, info.name, -1, name, 128)) {
 		render::draw_text_wchar(bbox.left + ((bbox.right - bbox.left) * .5f), bbox.top - 14, render::fonts::main, name, true, color);
@@ -70,9 +77,9 @@ void draw_name(player_t* player, color color) {
 }
 
 void draw_box(color color) {
-	render::draw_outline(bbox.left - 1, bbox.top - 1, bbox.right - bbox.left + 2, bbox.bottom - bbox.top + 2, color::black(color.a));
-	render::draw_outline(bbox.left, bbox.top, bbox.right - bbox.left, bbox.bottom - bbox.top, color);
-	render::draw_outline(bbox.left + 1, bbox.top + 1, bbox.right - bbox.left - 2, bbox.bottom - bbox.top - 2, color::black(color.a));
+	render::draw_outline(bbox.left - 1, bbox.top - 1, bbox.right - bbox.left + 2, bbox.bottom - bbox.top + 2, color::black(color.a)); //outter outline
+	render::draw_outline(bbox.left, bbox.top, bbox.right - bbox.left, bbox.bottom - bbox.top, color); //actual box
+	render::draw_outline(bbox.left + 1, bbox.top + 1, bbox.right - bbox.left - 2, bbox.bottom - bbox.top - 2, color::black(color.a)); //inner outline
 }
 
 void draw_weapon(player_t* player, color color) {
@@ -82,30 +89,38 @@ void draw_weapon(player_t* player, color color) {
 }
 
 void draw_healthbar(player_t* player) {
-	int health = player->health();
-	int height = ((bbox.bottom - bbox.top) * health) / 100;
+	auto health = player->health();
+	auto height = ((bbox.bottom - bbox.top) * health) / 100;
 	render::draw_outline(bbox.left - 6, bbox.top - 1, 4, bbox.bottom - bbox.top + 2, color::black(200));
 	render::draw_filled_rect(bbox.left - 5, bbox.top, 2, ((bbox.bottom - bbox.top) - height), color::black(200));
 	render::draw_filled_rect(bbox.left - 5, bbox.top + ((bbox.bottom - bbox.top) - height), 2, height, get_color_from_health(health));
 }
 
+void draw_headdot(player_t* player, color color) {
+	vec3_t screen_head_pos;
+	if (math::world_to_screen(player->get_hitbox_position(hitbox_head), screen_head_pos))
+		render::draw_xhair(screen_head_pos.x, screen_head_pos.y, true, color);
+}
+
 void visuals::esp::draw() {
 	for (int i = 1; i < interfaces::globals->max_clients; i++) {
 		auto entity = reinterpret_cast<player_t*>(interfaces::entity_list->get_client_entity(i));
-		if (!entity || !entity->is_player() || entity->dormant() || !entity->is_alive())
+		if (!entity || !entity->is_player() || entity->dormant() || !entity->is_alive() || entity == csgo::local_player) //dont draw esp for localplayer for now
 			continue;
 
 		bbox = get_bounds(entity);
-		if (bbox.right == 0 || bbox.bottom == 0)
+		if (bbox.right == 0 || bbox.bottom == 0) //if box is out of bounds, skip
 			continue;
 
 		if (variables::visuals::esp_show_name)
 			draw_name(entity, color::white(200));
 		if (variables::visuals::esp_show_box) //ghetto visibility check, will change
-			draw_box(entity->is_enemy(csgo::local_player) ? csgo::local_player->can_see_player_pos(entity, entity->get_hitbox_position(hitbox_chest)) ? color(255, 255, 0, 200) : color(255, 0, 0, 200) : csgo::local_player->can_see_player_pos(entity, entity->get_hitbox_position(hitbox_chest)) ? color(0, 255, 0, 200) : color(0, 0, 255, 200));
+			draw_box(entity->is_enemy(csgo::local_player) ? csgo::local_player->can_see_player_pos(entity, entity->get_hitbox_position(hitbox_chest)) ? variables::visuals::esp_colors::enemies_visible : variables::visuals::esp_colors::enemies_invisible : csgo::local_player->can_see_player_pos(entity, entity->get_hitbox_position(hitbox_chest)) ? variables::visuals::esp_colors::team_visible : variables::visuals::esp_colors::team_invisible);
 		if (variables::visuals::esp_show_weapon)
 			draw_weapon(entity, color::white(200));
 		if (variables::visuals::esp_show_healthbar)
 			draw_healthbar(entity);
+		if (variables::visuals::esp_show_headdot)
+			draw_headdot(entity, color::white(200));
 	}
 }

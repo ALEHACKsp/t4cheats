@@ -5,7 +5,7 @@ unsigned long render::fonts::main;
 void render::initialize() {
 	render::fonts::main = interfaces::surface->font_create();
 
-	interfaces::surface->set_font_glyph(render::fonts::main, "Verdana", 12, 800, 0, 0, font_flags::fontflag_dropshadow);
+	interfaces::surface->set_font_glyph(render::fonts::main, "Tahoma", 12, 400, 0, 0, font_flags::fontflag_dropshadow | font_flags::fontflag_antialias);
 
 	console::log("[setup] render initialized!\n");
 }
@@ -79,6 +79,17 @@ void render::draw_circle(std::int32_t x, std::int32_t y, std::int32_t r, std::in
 		interfaces::surface->set_drawing_color(col.r, col.g, col.b, col.a);
 		interfaces::surface->draw_line(x1, y1, x2, y2);
 	}
+}
+
+void render::draw_xhair(int x, int y, bool outline, color col) {
+	if (outline) {
+		interfaces::surface->set_drawing_color(0, 0, 0, col.a);
+		interfaces::surface->draw_filled_rectangle(x - 3, y - 1, 7, 3);
+		interfaces::surface->draw_filled_rectangle(x - 1, y - 3, 3, 7);
+	}
+	interfaces::surface->set_drawing_color(col.r, col.g, col.b, col.a);
+	interfaces::surface->draw_filled_rectangle(x - 2, y, 5, 1);
+	interfaces::surface->draw_filled_rectangle(x, y - 2, 1, 5);
 }
 
 vec2_t render::get_text_size(unsigned long font, std::string text) {

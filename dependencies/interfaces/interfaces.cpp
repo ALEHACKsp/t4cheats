@@ -13,6 +13,7 @@ c_global_vars_base* interfaces::globals = nullptr;
 i_material_system* interfaces::material_system = nullptr;
 iv_model_info* interfaces::model_info = nullptr;
 iv_model_render* interfaces::model_render = nullptr;
+i_studio_render* interfaces::studio_render = nullptr;
 i_render_view* interfaces::render_view = nullptr;
 i_console* interfaces::console = nullptr;
 i_localize* interfaces::localize = nullptr;
@@ -36,6 +37,7 @@ bool interfaces::initialize() {
 	material_system = get_interface<i_material_system, interface_type::index>("materialsystem.dll", "VMaterialSystem080");
 	model_info = get_interface<iv_model_info, interface_type::index>("engine.dll", "VModelInfoClient004");
 	model_render = get_interface<iv_model_render, interface_type::index>("engine.dll", "VEngineModel016");
+	studio_render = get_interface< i_studio_render, interface_type::index >("studiorender.dll", "VStudioRender026");
 	render_view = get_interface<i_render_view, interface_type::index>("engine.dll", "VEngineRenderView014");
 	console = get_interface<i_console, interface_type::index>("vstdlib.dll", "VEngineCvar007");
 	localize = get_interface<i_localize, interface_type::index>("localize.dll", "Localize_001");

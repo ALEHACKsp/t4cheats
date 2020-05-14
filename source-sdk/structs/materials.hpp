@@ -65,7 +65,8 @@ typedef void* studio_decal_handle_t;
 typedef int material_property_types_t;
 typedef unsigned short model_instance_handle_t;
 using material_handle_t = unsigned short;
-
+typedef int override_type_t;
+class i_studio_render;
 
 class i_material {
 public:

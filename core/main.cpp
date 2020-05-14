@@ -6,7 +6,7 @@ unsigned long WINAPI initialize(void* instance) {
 		Sleep(200);
 
 #ifdef _DEBUG
-	console::initialize("csgo-cheat console");
+	console::initialize("console");
 #endif
 
 	try {
@@ -16,11 +16,11 @@ unsigned long WINAPI initialize(void* instance) {
 	}
 
 	catch (const std::runtime_error & error) {
-		MessageBoxA(NULL, error.what(), "csgo-cheat error!", MB_OK | MB_ICONERROR);
+		MessageBoxA(NULL, error.what(), "woops, there was an error!", MB_OK | MB_ICONERROR);
 		FreeLibraryAndExitThread(static_cast<HMODULE>(instance), 0);
 	}
 
-	while (!GetAsyncKeyState(VK_END))
+	while (!GetAsyncKeyState(VK_PRIOR)) //key to uninject the cheat 'PAGEUP'
 		std::this_thread::sleep_for(std::chrono::milliseconds(50));
 
 	FreeLibraryAndExitThread(static_cast<HMODULE>(instance), 0);
@@ -41,16 +41,12 @@ std::int32_t WINAPI DllMain(const HMODULE instance [[maybe_unused]], const unsig
 
 	switch (reason) {
 	case DLL_PROCESS_ATTACH: {
-		if (auto handle = CreateThread(nullptr, NULL, initialize, instance, NULL, nullptr))
-			CloseHandle(handle);
-
-		break;
-	}
-
+			if (auto handle = CreateThread(nullptr, NULL, initialize, instance, NULL, nullptr))
+				CloseHandle(handle);
+		} break;
 	case DLL_PROCESS_DETACH: {
-		release();
-		break;
-	}
+			release();
+		} break;
 	}
 
 	return true;

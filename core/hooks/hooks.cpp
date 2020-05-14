@@ -6,10 +6,12 @@
 
 hooks::create_move::fn create_move_original = nullptr;
 hooks::paint_traverse::fn paint_traverse_original = nullptr;
+hooks::draw_model_execute::fn dme_original = nullptr;
 
 bool hooks::initialize() {
 	auto create_move_target = reinterpret_cast<void*>(get_virtual(interfaces::clientmode, 24));
 	auto paint_traverse_target = reinterpret_cast<void*>(get_virtual(interfaces::panel, 41));
+	auto draw_model_execute = reinterpret_cast<void*>(get_virtual(interfaces::model_render, 21));
 
 	if (MH_Initialize() != MH_OK) {
 		throw std::runtime_error("failed to initialize MH_Initialize.");
@@ -23,6 +25,11 @@ bool hooks::initialize() {
 
 	if (MH_CreateHook(paint_traverse_target, &paint_traverse::hook, reinterpret_cast<void**>(&paint_traverse_original)) != MH_OK) {
 		throw std::runtime_error("failed to initialize paint_traverse. (outdated index?)");
+		return false;
+	}
+
+	if (MH_CreateHook(draw_model_execute, &draw_model_execute::hook, reinterpret_cast<void**>(&dme_original)) != MH_OK) {
+		throw std::runtime_error("failed to initialize draw_model_execute. (outdated index?)");
 		return false;
 	}
 
@@ -83,24 +90,42 @@ void __stdcall hooks::paint_traverse::hook(unsigned int panel, bool force_repain
 	auto panel_to_draw = fnv::hash(interfaces::panel->get_panel_name(panel));
 
 	switch (panel_to_draw) {
-	case fnv::hash("MatSystemTopPanel"):
-		{
+	case fnv::hash("MatSystemTopPanel"): {
 			if (interfaces::engine->is_in_game() && csgo::local_player) {
 				if (variables::visuals::esp_enable)
 					visuals::esp::draw();
+				visuals::other_visuals::draw();
 			}
 
-			render::draw_text_string(10, 10, render::fonts::main, "t4cheats", false, color::white(255));
+			render::draw_text_string(10, 10, render::fonts::main, "t4cheats | " + menu::caption + " | " + utilities::get_time_as_string(), false, color::white(255)); //cool epic watermark that was here already
 
 			menu::toggle();
 			menu::render();
 		}
 		break;
 	case fnv::hash("FocusOverlayPanel"):
-		interfaces::panel->set_keyboard_input_enabled(panel, variables::menu::opened);
-		interfaces::panel->set_mouse_input_enabled(panel, variables::menu::opened);
+		//interfaces::panel->set_keyboard_input_enabled(panel, variables::menu::opened); //uncomment if you dont want to be able to walk when in menu
+		interfaces::panel->set_mouse_input_enabled(panel, variables::menu::opened); //disable mouse input when in menu
 		break;
 	}
 
 	paint_traverse_original(interfaces::panel, panel, force_repaint, allow_force);
+}
+
+void __fastcall hooks::draw_model_execute::hook(void* _this, int edx, IMatRenderContext* ctx, const draw_model_state_t& state, const model_render_info_t& pInfo, matrix_t* pCustomBoneToWorld)
+{
+	if (interfaces::engine->is_in_game() && interfaces::engine->is_connected() && csgo::local_player) {
+		const auto mdl = pInfo.model;
+		if (!mdl)
+			return;
+		bool is_player = strstr(mdl->name, "models/player") != nullptr;
+		if (!interfaces::studio_render->is_force_material_override() && is_player) {
+			visuals::chams::render(ctx, state, pInfo, pCustomBoneToWorld);
+			dme_original(_this, edx, ctx, state, pInfo, pCustomBoneToWorld);
+			interfaces::model_render->override_material(nullptr);
+		}
+		else
+			dme_original(_this, edx, ctx, state, pInfo, pCustomBoneToWorld);
+	}
+
 }

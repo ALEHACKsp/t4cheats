@@ -22,21 +22,22 @@ std::string captions[] = {
 };
 
 void menu::render() {
-	static bool init = false;
-	static std::string caption = "";
-	if (!init) {
-		caption = captions[rand() % 8];
+	static bool init = false; 
+	if (!init) { //initialize, only do once
+		menu::caption = captions[rand() % 8]; //choose random caption from array "captions", 8 being the number of captions (wierd because "->size()" returns 11 for some reason)
 		init = true;
 	}
+
 	if (!variables::menu::opened)
 		return;
 
-	do_frame(variables::menu::x, variables::menu::y, variables::menu::w, variables::menu::h, color(36, 36, 36, 255), color(25, 25, 25, 255), color(36, 36, 36, 255), "t4cheats - " + caption);
+	do_frame(variables::menu::x, variables::menu::y, variables::menu::w, variables::menu::h, color(36, 36, 36, 255), color(25, 25, 25, 255), color(36, 36, 36, 255), "t4cheats - " + menu::caption);
 	
 	menu_framework::group_box(variables::menu::x + 5, variables::menu::y + 35, 100, 260, render::fonts::main, "Tabs", false); {
 		menu_framework::tab(variables::menu::x + 5, variables::menu::y + 45, 100, 30, render::fonts::main, "Aimbot", menu::current_tab, 0, false);
 		menu_framework::tab(variables::menu::x + 5, variables::menu::y + 80, 100, 30, render::fonts::main, "Visuals", menu::current_tab, 1, false);
 		menu_framework::tab(variables::menu::x + 5, variables::menu::y + 115, 100, 30, render::fonts::main, "Misc", menu::current_tab, 2, false);
+		menu_framework::tab(variables::menu::x + 5, variables::menu::y + 150, 100, 30, render::fonts::main, "Info", menu::current_tab, 3, false);
 	}
 
 	switch (current_tab) {
@@ -54,6 +55,14 @@ void menu::render() {
 			menu_framework::check_box(&pos[0], &pos[1], pos[0] + 200, render::fonts::main, "Esp show box", variables::visuals::esp_show_box);
 			menu_framework::check_box(&pos[0], &pos[1], pos[0] + 200, render::fonts::main, "Esp show weapon", variables::visuals::esp_show_weapon);
 			menu_framework::check_box(&pos[0], &pos[1], pos[0] + 200, render::fonts::main, "Esp show healthbar", variables::visuals::esp_show_healthbar);
+			menu_framework::check_box(&pos[0], &pos[1], pos[0] + 200, render::fonts::main, "Esp show headdot", variables::visuals::esp_show_headdot);
+			pos[1] += 8;
+			menu_framework::check_box(&pos[0], &pos[1], pos[0] + 200, render::fonts::main, "Chams enable", variables::visuals::chams_enable);
+			menu_framework::check_box(&pos[0], &pos[1], pos[0] + 200, render::fonts::main, "Chams through walls", variables::visuals::chams_through_walls);
+			pos[1] += 8;
+			menu_framework::check_box(&pos[0], &pos[1], pos[0] + 200, render::fonts::main, "Crosshair enable", variables::visuals::crosshair_enable);
+			menu_framework::check_box(&pos[0], &pos[1], pos[0] + 200, render::fonts::main, "Crosshair outline", variables::visuals::crosshair_outline);
+			menu_framework::check_box(&pos[0], &pos[1], pos[0] + 200, render::fonts::main, "Crosshair recoil", variables::visuals::crosshair_recoil);
 		}
 		break;
 	case 2:
@@ -62,12 +71,18 @@ void menu::render() {
 			menu_framework::check_box(&pos[0], &pos[1], pos[0] + 200, render::fonts::main, "Bunnyhop", variables::bunnyhop);
 		}
 		break;
+	case 3:
+		menu_framework::group_box(variables::menu::x + 110, variables::menu::y + 35, 285, 260, render::fonts::main, "Info", false); {
+			int pos[2] = { variables::menu::x + 120, variables::menu::y + 45 };
+			render::draw_text_string(pos[0], pos[1], render::fonts::main, "Build on: " + std::string(__TIMESTAMP__), false, color::white());
+		}
+		break;
 	}
 
 	menu_framework::menu_movement(variables::menu::x, variables::menu::y, variables::menu::w, 30);
 }
 
 void menu::toggle() {
-	if (GetAsyncKeyState(VK_INSERT) & 1)
+	if (GetAsyncKeyState(VK_INSERT) & 1) //switch opened state when menu key 'INSERT' is pressed
 		variables::menu::opened = !variables::menu::opened;
 }
