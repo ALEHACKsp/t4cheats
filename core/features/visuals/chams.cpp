@@ -19,7 +19,7 @@ void override_material(bool ignorez, const color& color) {
 	interfaces::model_render->override_material(material); //override material of the model
 }
 
-void visuals::chams::render(IMatRenderContext* ctx, const draw_model_state_t& state, const model_render_info_t& info, matrix_t* matrix) {
+void visuals::chams::render(i_mat_render_context* ctx, const draw_model_state_t& state, const model_render_info_t& info, matrix_t* matrix) {
 	auto player = reinterpret_cast<player_t*>(interfaces::entity_list->get_client_entity(info.entity_index));
 	if (!player || !player->is_alive() || player->dormant() || player == csgo::local_player) //dont override localplayer for now
 		return;

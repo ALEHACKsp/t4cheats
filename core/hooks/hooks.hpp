@@ -17,7 +17,7 @@ namespace hooks {
 	}
 
 	namespace draw_model_execute {
-		using fn = void(__fastcall*)(void*, int, IMatRenderContext*, const draw_model_state_t&, const model_render_info_t&, matrix_t*);
-		void __fastcall hook(void* _this, int edx, IMatRenderContext* ctx, const draw_model_state_t& state, const model_render_info_t& pInfo, matrix_t* pCustomBoneToWorld);
+		using fn = void(__fastcall*)(void*, int, i_mat_render_context*, const draw_model_state_t&, const model_render_info_t&, matrix_t*);
+		void __fastcall hook(void* _this, int edx, i_mat_render_context* ctx, const draw_model_state_t& state, const model_render_info_t& pInfo, matrix_t* pCustomBoneToWorld);
 	}
 }

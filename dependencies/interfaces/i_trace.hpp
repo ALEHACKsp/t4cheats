@@ -167,7 +167,7 @@ private:
 
 struct csurface_t {
 	const char* name;
-	short surfaceProps;
+	short surface_props;
 	unsigned short flags;
 };
 

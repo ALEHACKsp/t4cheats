@@ -26,6 +26,7 @@
 #include "i_player_movement.hpp"
 #include "i_weapon_system.hpp"
 #include "i_studio_render.h"
+#include "i_physics_surface_props.hpp"
 
 namespace interfaces {
 	enum class interface_type { index, bruteforce };
@@ -80,6 +81,7 @@ namespace interfaces {
 	extern iv_model_info* model_info;
 	extern iv_model_render* model_render;
 	extern i_studio_render* studio_render;
+	extern i_physics_surface_props* physics_surface;
 	extern i_render_view* render_view;
 	extern iv_debug_overlay* debug_overlay;
 	extern i_console* console;

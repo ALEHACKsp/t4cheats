@@ -475,6 +475,30 @@ public:
 			return vec3_t{ };
 	}
 
+	vec3_t get_hitbox_position_and_radius(int hitbox_id, float* radius) {
+		matrix_t bone_matrix[MAXSTUDIOBONES];
+
+		if (setup_bones(bone_matrix, MAXSTUDIOBONES, BONE_USED_BY_HITBOX, 0.0f)) {
+			auto studio_model = interfaces::model_info->get_studio_model(model());
+
+			if (studio_model) {
+				auto hitbox = studio_model->hitbox_set(0)->hitbox(hitbox_id);
+
+				if (hitbox) {
+					auto min = vec3_t{}, max = vec3_t{};
+
+					math::transform_vector(hitbox->mins, bone_matrix[hitbox->bone], min);
+					math::transform_vector(hitbox->maxs, bone_matrix[hitbox->bone], max);
+
+					*radius = hitbox->radius;
+
+					return vec3_t((min.x + max.x) * 0.5f, (min.y + max.y) * 0.5f, (min.z + max.z) * 0.5f);
+				}
+			}
+		}
+		return vec3_t{};
+	}
+
 	vec3_t get_hitbox_position(int hitbox_id) {
 		matrix_t bone_matrix[MAXSTUDIOBONES];
 

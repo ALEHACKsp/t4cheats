@@ -87,6 +87,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="core\features\aimbot\aimbot.cpp" />
+    <ClCompile Include="core\features\aimbot\autowall.cpp" />
     <ClCompile Include="core\features\misc\engine_prediction.cpp" />
     <ClCompile Include="core\features\misc\misc.cpp" />
     <ClCompile Include="core\features\visuals\chams.cpp" />
@@ -182,6 +184,7 @@
     <ClInclude Include="source-sdk\structs\dlight.hpp" />
     <ClInclude Include="source-sdk\structs\materials.hpp" />
     <ClInclude Include="source-sdk\structs\models.hpp" />
+    <ClInclude Include="dependencies\interfaces\i_physics_surface_props.hpp" />
     <ClInclude Include="source-sdk\structs\vertex_t.hpp" />
     <ClInclude Include="source-sdk\structs\weaponinfo.hpp" />
   </ItemGroup>

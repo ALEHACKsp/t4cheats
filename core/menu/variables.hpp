@@ -3,7 +3,15 @@
 namespace variables { //you maybe dont like my style of organizing, but i think it looks alright
 	inline bool bunnyhop = false;
 	inline float test_float = 0.f;
-
+	namespace aimbot {
+		inline bool aimbot_enable = false;
+		inline bool aimbot_silent = false;
+		inline float aimbot_minimum_damage = 20.f;
+		inline float aimbot_minimum_hitchance = 50.f;
+		inline bool aimbot_multipoint_enable = true;
+		inline float aimbot_multipoint_head = 50.f;
+		inline float aimbot_multipoint_body = 80.f;
+	}
 	namespace visuals {
 		inline bool esp_enable = false;
 		inline bool esp_show_name = true;

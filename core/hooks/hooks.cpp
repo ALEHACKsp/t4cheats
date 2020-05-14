@@ -68,7 +68,7 @@ bool __fastcall hooks::create_move::hook(void* ecx, void* edx, int input_sample_
 
 	prediction::start(cmd); {
 
-
+		aimbot::run(cmd);
 
 	} prediction::end();
 
@@ -112,7 +112,7 @@ void __stdcall hooks::paint_traverse::hook(unsigned int panel, bool force_repain
 	paint_traverse_original(interfaces::panel, panel, force_repaint, allow_force);
 }
 
-void __fastcall hooks::draw_model_execute::hook(void* _this, int edx, IMatRenderContext* ctx, const draw_model_state_t& state, const model_render_info_t& pInfo, matrix_t* pCustomBoneToWorld)
+void __fastcall hooks::draw_model_execute::hook(void* _this, int edx, i_mat_render_context* ctx, const draw_model_state_t& state, const model_render_info_t& pInfo, matrix_t* pCustomBoneToWorld)
 {
 	if (interfaces::engine->is_in_game() && interfaces::engine->is_connected() && csgo::local_player) {
 		const auto mdl = pInfo.model;
