@@ -11,5 +11,5 @@ make sure your project is set to **Release** and **x86**
 If you don't have the time to build it yourself, go to the [Releases](https://github.com/T4zzuu/t4cheats/releases) for a binary.
 
 # credits
-based on designer1337's ["csgo-cheat-base"](https://github.com/designer1337/csgo-cheat-base)
+Based on designer1337's ["csgo-cheat-base"](https://github.com/designer1337/csgo-cheat-base)
 more credits can be found in the README of his project
