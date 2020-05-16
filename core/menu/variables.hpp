@@ -19,12 +19,6 @@ namespace variables { //you maybe dont like my style of organizing, but i think 
 		inline bool esp_show_weapon = true;
 		inline bool esp_show_healthbar = true;
 		inline bool esp_show_headdot = false;
-		namespace esp_colors {
-			inline color enemies_visible = color(255, 200, 0, 200);
-			inline color enemies_invisible = color(255, 0, 0, 200);
-			inline color team_visible = color(0, 255, 0, 200);
-			inline color team_invisible = color(0, 0, 255, 200);
-		}
 		inline bool chams_enable = false;
 		inline bool chams_through_walls = true;
 		namespace chams_colors {

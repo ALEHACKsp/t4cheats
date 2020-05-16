@@ -86,6 +86,46 @@ bool __fastcall hooks::create_move::hook(void* ecx, void* edx, int input_sample_
 	return false;
 }
 
+color from_hsv(int h, double s, double v) {
+	double C = s * v;
+	double X = C * (1 - abs(fmod(h / 60.0, 2) - 1));
+	double m = v - C;
+	double Rs, Gs, Bs;
+
+	if (h >= 0 && h < 60) {
+		Rs = C;
+		Gs = X;
+		Bs = 0;
+	}
+	else if (h >= 60 && h < 120) {
+		Rs = X;
+		Gs = C;
+		Bs = 0;
+	}
+	else if (h >= 120 && h < 180) {
+		Rs = 0;
+		Gs = C;
+		Bs = X;
+	}
+	else if (h >= 180 && h < 240) {
+		Rs = 0;
+		Gs = X;
+		Bs = C;
+	}
+	else if (h >= 240 && h < 300) {
+		Rs = X;
+		Gs = 0;
+		Bs = C;
+	}
+	else {
+		Rs = C;
+		Gs = 0;
+		Bs = X;
+	}
+
+	return color((Rs + m) * 255, (Gs + m) * 255, (Bs + m) * 255);
+}
+
 void __stdcall hooks::paint_traverse::hook(unsigned int panel, bool force_repaint, bool allow_force) {
 	auto panel_to_draw = fnv::hash(interfaces::panel->get_panel_name(panel));
 
@@ -97,7 +137,11 @@ void __stdcall hooks::paint_traverse::hook(unsigned int panel, bool force_repain
 				visuals::other_visuals::draw();
 			}
 
-			render::draw_text_string(10, 10, render::fonts::main, "t4cheats | " + menu::caption + " | " + utilities::get_time_as_string(), false, color::white(255)); //cool epic watermark that was here already
+			std::string watermark_text = "t4cheats | " + menu::caption + " | " + utilities::get_time_as_string();
+			auto watermark_width = render::get_text_size(render::fonts::main, watermark_text).x;
+			render::draw_filled_rect(11, 11, watermark_width + 8, 18, color(50, 50, 50, 150));
+			render::draw_outline(10, 10, watermark_width + 9, 19, color(25, 25, 25, 150));
+			render::draw_text_string(15, 13, render::fonts::main, watermark_text, false, color::white(255));;
 
 			menu::toggle();
 			menu::render();

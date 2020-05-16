@@ -68,32 +68,59 @@ RECT bbox;
 	bottom = y-coordinate bottom
 */
 
-void draw_name(player_t* player, color color) {
+void draw_name(player_t* player) {
 	static wchar_t name[128]; player_info_t info;
 	interfaces::engine->get_player_info(player->index(), &info);
-	if (MultiByteToWideChar(CP_UTF8, 0, info.name, -1, name, 128)) {
-		render::draw_text_wchar(bbox.left + ((bbox.right - bbox.left) * .5f), bbox.top - 14, render::fonts::main, name, true, color);
+	std::string string_name = info.name;
+	if (string_name.length() > 16) {
+		string_name.resize(16);
+		string_name += "...";
 	}
+	int wname_dimensions[2];
+	int width = 10;
+	if (MultiByteToWideChar(CP_UTF8, 0, string_name.c_str(), -1, name, 128)) {
+		interfaces::surface->get_text_size(render::fonts::main, name, wname_dimensions[0], wname_dimensions[1]);
+		render::draw_text_wchar(bbox.left + ((bbox.right - bbox.left) * .5f) - (info.fakeplayer ? (render::get_text_size(render::fonts::pixel, "[BOT]").x / 2) + 2 : 0), bbox.top - 16, render::fonts::main, name, true, color(255, 255, 255, 200));
+		width += wname_dimensions[0];
+	}
+	if (info.fakeplayer) {
+		width += render::get_text_size(render::fonts::pixel, "[BOT]").x;
+		render::draw_text_string(bbox.left + ((bbox.right - bbox.left) * .5f) - (width * .5f) + wname_dimensions[0] + 6, bbox.top - 15, render::fonts::pixel, "[BOT]", false, color(200, 200, 200, 200));
+	}
+	render::draw_filled_rect(bbox.left + ((bbox.right - bbox.left) * .5f) - (width * .5f), bbox.top - 18, width, wname_dimensions[1] + 4, color(50, 50, 50, 150));
+	render::draw_outline(bbox.left + ((bbox.right - bbox.left) * .5f) - (width * .5f), bbox.top - 18, width, wname_dimensions[1] + 4, color(25, 25, 25, 150));
+	render::draw_line(bbox.left + ((bbox.right - bbox.left) * .5f) - (width * .5f), bbox.top - 18, bbox.left + ((bbox.right - bbox.left) * .5f) - (width * .5f) + width, bbox.top - 18, player->team() == 2 ? color(190, 160, 60, 200) : color(60, 120, 190, 200));
 }
 
-void draw_box(color color) {
-	render::draw_outline(bbox.left - 1, bbox.top - 1, bbox.right - bbox.left + 2, bbox.bottom - bbox.top + 2, color::black(color.a)); //outter outline
-	render::draw_outline(bbox.left, bbox.top, bbox.right - bbox.left, bbox.bottom - bbox.top, color); //actual box
-	render::draw_outline(bbox.left + 1, bbox.top + 1, bbox.right - bbox.left - 2, bbox.bottom - bbox.top - 2, color::black(color.a)); //inner outline
-}
-
-void draw_weapon(player_t* player, color color) {
-	if (player->active_weapon()) {
-		render::draw_text_string(bbox.left + ((bbox.right - bbox.left) * .5f), bbox.bottom, render::fonts::main, player->active_weapon()->get_weapon_name(), true, color);
-	}
+void draw_box() {
+	render::draw_outline(bbox.left, bbox.top, bbox.right - bbox.left, bbox.bottom - bbox.top, color::black(150));
 }
 
 void draw_healthbar(player_t* player) {
 	auto health = player->health();
-	auto height = ((bbox.bottom - bbox.top) * health) / 100;
-	render::draw_outline(bbox.left - 6, bbox.top - 1, 4, bbox.bottom - bbox.top + 2, color::black(200));
-	render::draw_filled_rect(bbox.left - 5, bbox.top, 2, ((bbox.bottom - bbox.top) - height), color::black(200));
-	render::draw_filled_rect(bbox.left - 5, bbox.top + ((bbox.bottom - bbox.top) - height), 2, height, get_color_from_health(health));
+	auto health_width = (56 * health) / 100;
+	auto y = bbox.bottom + 1; //haha, i love doing stuff like this
+	render::draw_filled_rect(bbox.left + ((bbox.right - bbox.left) * .5f) - 39, y, 78, 10, color(50, 50, 50, 150));
+	render::draw_outline(bbox.left + ((bbox.right - bbox.left) * .5f) - 39, y, 78, 10, color(25, 25, 25, 150));
+	render::draw_text_string(bbox.left + ((bbox.right - bbox.left) * .5f) - 36, y - 1, render::fonts::pixel, "HP:", false, color(240, 240, 240, 200));
+	render::draw_outline(bbox.left + ((bbox.right - bbox.left) * .5f) - 22, y + 3, 58, 4, color(15, 15, 15, 150));
+	render::draw_filled_rect(bbox.left + ((bbox.right - bbox.left) * .5f) - 21, y + 4, health_width, 2, get_color_from_health(health, 200));
+	if (health < 100)
+		render::draw_text_string(bbox.left + ((bbox.right - bbox.left) * .5f) - 21 + health_width, y - 1, render::fonts::pixel_shadow, std::to_string(health), true, color(240, 240, 240, 200));
+}
+
+void draw_weapon(player_t* player) {
+	if (player->active_weapon()) {
+		auto weapon = player->active_weapon();
+		auto y = bbox.bottom + 1 + (variables::visuals::esp_show_healthbar * 11); //haha, i love doing stuff like this
+		std::string weapon_text = weapon->get_weapon_name();
+		if (weapon->clip1_count() >= 0)
+			weapon_text += " [" + std::to_string(weapon->clip1_count()) + "/" + std::to_string(weapon->primary_reserve_ammo_acount()) + "]";
+		auto width = render::get_text_size(render::fonts::pixel, weapon_text).x + 5;
+		render::draw_filled_rect(bbox.left + ((bbox.right - bbox.left) * .5f) - (width * .5f), y, width, 9, color(50, 50, 50, 150));
+		render::draw_outline(bbox.left + ((bbox.right - bbox.left) * .5f) - (width * .5f), y, width, 9, color(25, 25, 25, 150));
+		render::draw_text_string(bbox.left + ((bbox.right - bbox.left) * .5f), y - 1, render::fonts::pixel, weapon_text, true, color(240, 240, 240, 200));
+	}
 }
 
 void draw_headdot(player_t* player, color color) {
@@ -113,13 +140,13 @@ void visuals::esp::draw() {
 			continue;
 
 		if (variables::visuals::esp_show_name)
-			draw_name(entity, color::white(200));
-		if (variables::visuals::esp_show_box) //ghetto visibility check, will change
-			draw_box(entity->is_enemy(csgo::local_player) ? csgo::local_player->can_see_player_pos(entity, entity->get_hitbox_position(hitbox_chest)) ? variables::visuals::esp_colors::enemies_visible : variables::visuals::esp_colors::enemies_invisible : csgo::local_player->can_see_player_pos(entity, entity->get_hitbox_position(hitbox_chest)) ? variables::visuals::esp_colors::team_visible : variables::visuals::esp_colors::team_invisible);
-		if (variables::visuals::esp_show_weapon)
-			draw_weapon(entity, color::white(200));
+			draw_name(entity);
+		if (variables::visuals::esp_show_box)
+			draw_box();
 		if (variables::visuals::esp_show_healthbar)
 			draw_healthbar(entity);
+		if (variables::visuals::esp_show_weapon)
+			draw_weapon(entity);
 		if (variables::visuals::esp_show_headdot)
 			draw_headdot(entity, color::white(200));
 	}

@@ -1,11 +1,17 @@
 #include "renderer.hpp"
 
 unsigned long render::fonts::main;
+unsigned long render::fonts::pixel;
+unsigned long render::fonts::pixel_shadow;
 
 void render::initialize() {
 	render::fonts::main = interfaces::surface->font_create();
+	render::fonts::pixel = interfaces::surface->font_create();
+	render::fonts::pixel_shadow = interfaces::surface->font_create();
 
 	interfaces::surface->set_font_glyph(render::fonts::main, "Tahoma", 12, 400, 0, 0, font_flags::fontflag_dropshadow | font_flags::fontflag_antialias);
+	interfaces::surface->set_font_glyph(render::fonts::pixel, "Smallest Pixel-7", 11, 400, 0, 0, font_flags::fontflag_none);
+	interfaces::surface->set_font_glyph(render::fonts::pixel_shadow, "Smallest Pixel-7", 11, 400, 0, 0, font_flags::fontflag_dropshadow);
 
 	console::log("[setup] render initialized!\n");
 }

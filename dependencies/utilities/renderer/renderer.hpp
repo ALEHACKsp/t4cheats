@@ -33,6 +33,7 @@ namespace render {
 
 	namespace fonts {
 		extern unsigned long main;
+		extern unsigned long pixel;
+		extern unsigned long pixel_shadow;
 	}
-
 }
