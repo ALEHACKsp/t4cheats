@@ -28,7 +28,9 @@ namespace render {
 	void draw_outline(int x, int y, int w, int h, color colour);
 	void draw_textured_polygon(int n, vertex_t* vertice, color col);
 	void draw_circle(int x, int y, int r, int s, color col);
+	void draw_circle_3d(int x, int y, int z, int r, int s, color col, bool rainbow);
 	void draw_xhair(int x, int y, bool outline, color col);
+	void draw_gradient(color col, color col2, int x, int y, int w, int h, bool orientation);
 	vec2_t get_text_size(unsigned long font, std::string text);
 
 	namespace fonts {

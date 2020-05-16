@@ -3,7 +3,7 @@
 //todo auto elements positioning
 
 auto do_frame = [&](std::int32_t x, std::int32_t y, std::int32_t w, std::int32_t h, color bg, color header_text, color header_line, const std::string& name) {
-		render::draw_filled_rect(x - 1, y - 1, w + 2, h + 2, color(255, 140, 0, 150));
+		render::draw_gradient(color(255, 100, 0, 150), color(255, 200, 0, 150), x - 1, y - 1, w + 2, h + 2, true);
 		render::draw_filled_rect(x, y, w, h, bg);
 		render::draw_filled_rect(x, y, w, 30, header_text);
 		render::draw_filled_rect(x, y + 30, w, 2, header_line);
@@ -44,7 +44,7 @@ void menu::render() {
 	case 0:
 		menu_framework::group_box(variables::menu::x + 110, variables::menu::y + 35, 285, 260, render::fonts::main, "Aimbot", false); {
 			int pos[2] = { variables::menu::x + 120, variables::menu::y + 45 };
-			menu_framework::slider(&pos[0], &pos[1], 125, render::fonts::main, "Test slider", variables::test_float, -101.f, 101.f);
+			menu_framework::sliderf(&pos[0], &pos[1], 125, render::fonts::main, "Test slider", variables::test_float, -101.f, 101.f);
 		}
 		break;
 	case 1:
@@ -63,12 +63,21 @@ void menu::render() {
 			menu_framework::check_box(&pos[0], &pos[1], pos[0] + 200, render::fonts::main, "Crosshair enable", variables::visuals::crosshair_enable);
 			menu_framework::check_box(&pos[0], &pos[1], pos[0] + 200, render::fonts::main, "Crosshair outline", variables::visuals::crosshair_outline);
 			menu_framework::check_box(&pos[0], &pos[1], pos[0] + 200, render::fonts::main, "Crosshair recoil", variables::visuals::crosshair_recoil);
+			pos[1] += 8;
+			menu_framework::check_box(&pos[0], &pos[1], pos[0] + 200, render::fonts::main, "Visualize choke", variables::visuals::visualize_choke_enable);
+			pos[1] += 8;
+			menu_framework::check_box(&pos[0], &pos[1], pos[0] + 200, render::fonts::main, "Spectator list", variables::visuals::spectator_list_enable);
+			pos[1] += 8;
+			menu_framework::check_box(&pos[0], &pos[1], pos[0] + 200, render::fonts::main, "Fire timer", variables::visuals::fire_timer_enable);
 		}
 		break;
 	case 2:
 		menu_framework::group_box(variables::menu::x + 110, variables::menu::y + 35, 285, 260, render::fonts::main, "Misc", false); {
 			int pos[2] = { variables::menu::x + 120, variables::menu::y + 45 };
 			menu_framework::check_box(&pos[0], &pos[1], pos[0] + 200, render::fonts::main, "Bunnyhop", variables::bunnyhop);
+			menu_framework::check_box(&pos[0], &pos[1], pos[0] + 200, render::fonts::main, "Fake lag enable", variables::misc::fake_lag_enable);
+			menu_framework::slider(&pos[0], &pos[1], 125, render::fonts::main, "Fake lag max choke", variables::misc::fake_lag_max, 0, 6);
+			menu_framework::slider(&pos[0], &pos[1], 125, render::fonts::main, "Fake lag jitter", variables::misc::fake_lag_jitter, 0, 6);
 		}
 		break;
 	case 3:

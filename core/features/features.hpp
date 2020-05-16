@@ -31,5 +31,6 @@ namespace visuals {
 namespace misc {
 	namespace movement {
 		void bunny_hop(c_usercmd* cmd);
+		void fake_lag(bool& send_packet);
 	};
 }

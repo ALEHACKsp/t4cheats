@@ -183,6 +183,15 @@ enum item_definition_indexes {
 	GLOVE_SPECIALIST = 5034,
 	GLOVE_HYDRA = 5035
 };
+enum obs_modes {
+	obs_mode_none = 0,
+	obs_mode_deathcam = 1,
+	obs_mode_freezecam = 2,
+	obs_mode_fixed = 3,
+	obs_mode_in_eye = 4,
+	obs_mode_chase = 5,
+	obs_mode_roaming = 6
+};
 
 class entity_t {
 public:
@@ -425,11 +434,16 @@ public:
 	NETVAR("DT_BasePlayer", "m_flMaxspeed", max_speed, float);
 	NETVAR("DT_BaseEntity", "m_flShadowCastDistance", m_flFOVTime, float);
 	NETVAR("DT_BasePlayer", "m_hObserverTarget", observer_target, unsigned long);
+	NETVAR("DT_BasePlayer", "m_iObserverMode", observer_mode, int);
 	NETVAR("DT_BasePlayer", "m_nHitboxSet", hitbox_set, int);
 	NETVAR("DT_CSPlayer", "m_flDuckAmount", duck_amount, float);
 	NETVAR("DT_CSPlayer", "m_bHasHeavyArmor", has_heavy_armor, bool);
 	NETVAR("DT_SmokeGrenadeProjectile", "m_nSmokeEffectTickBegin", smoke_grenade_tick_begin, int);
 	NETVAR("DT_CSPlayer", "m_nTickBase", get_tick_base, int);
+
+	player_t* get_observer_target() {
+		return reinterpret_cast<player_t*>(interfaces::entity_list->get_client_entity_handle(this->observer_target()));;
+	}
 
 	weapon_t* active_weapon() {
 		auto active_weapon = read<uintptr_t>(netvar_manager::get_net_var(fnv::hash("DT_CSPlayer"), fnv::hash("m_hActiveWeapon"))) & 0xFFF;
@@ -580,4 +594,12 @@ public:
 			return this->team() != target->team();
 	}
 
+};
+
+struct inferno_t : public entity_t {
+	OFFSET(float, get_spawn_time, 0x20);
+
+	static float get_expiry_time() {
+		return 7.f;
+	}
 };

@@ -1,6 +1,6 @@
 #include "../features.hpp"
 
-void misc::movement::bunny_hop(c_usercmd* cmd) {
+void misc::movement::bunny_hop(c_usercmd* cmd) { //any public source, was already in here
 	if (!variables::bunnyhop)
 		return;
 
@@ -24,4 +24,9 @@ void misc::movement::bunny_hop(c_usercmd* cmd) {
 		last_jumped = false;
 		should_fake = false;
 	}
+};
+
+void misc::movement::fake_lag(bool& send_packet) {
+	//dont send a packet if your current amount of choked packets is below or equal to your maximum fakelag value minus your jitter
+	send_packet = interfaces::clientstate->net_channel->choked_packets >= (variables::misc::fake_lag_max - (variables::misc::fake_lag_jitter > 0 ? rand() % variables::misc::fake_lag_jitter : 0));
 };

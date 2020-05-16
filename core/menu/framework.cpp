@@ -47,7 +47,7 @@ void menu_framework::check_box(std::int32_t* x, std::int32_t* y, std::int32_t po
 	*y += h + 6;
 }
 
-void menu_framework::slider(std::int32_t* x, std::int32_t* y, std::int32_t position, unsigned long font, const std::string string, float& value, float min_value, float max_value) {
+void menu_framework::sliderf(std::int32_t* x, std::int32_t* y, std::int32_t position, unsigned long font, const std::string string, float& value, float min_value, float max_value) {
 	GetCursorPos(&cursor);
 	
 	int ix = *x + 140;
@@ -65,6 +65,26 @@ void menu_framework::slider(std::int32_t* x, std::int32_t* y, std::int32_t posit
 
 	*y += 16;
 }
+
+void menu_framework::slider(std::int32_t* x, std::int32_t* y, std::int32_t position, unsigned long font, const std::string string, int& value, int min_value, int max_value) {
+	GetCursorPos(&cursor);
+
+	int ix = *x + 140;
+	int yi = *y + 4;
+
+	if ((cursor.x > ix) && (cursor.x < ix + position) && (cursor.y > yi) && (cursor.y < yi + 6) && (GetAsyncKeyState(VK_LBUTTON)))
+		value = (cursor.x - ix) / (int(position) / int(max_value));
+
+	//slider background
+	render::draw_filled_rect(ix, yi, position, 6, color(36, 36, 36, 255));
+	render::draw_filled_rect(ix, yi, value * (int(position) / int(max_value)), 6, color(255, 140, 0, 255));
+
+	//slider label
+	render::draw_text_string(*x + 2, *y - 1, font, (std::stringstream{ } << string << ": " << std::setprecision(3) << value).str(), false, color::white());
+
+	*y += 16;
+}
+
 
 void menu_framework::menu_movement(std::int32_t& x, std::int32_t& y, std::int32_t w, std::int32_t h) {
 	GetCursorPos(&cursor);

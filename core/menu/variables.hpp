@@ -31,11 +31,20 @@ namespace variables { //you maybe dont like my style of organizing, but i think 
 		inline bool crosshair_outline = true;
 		inline bool crosshair_recoil = true;
 		inline color crosshair_color = color::white();
+		inline bool visualize_choke_enable = true;
+		inline bool spectator_list_enable = true;
+		inline bool fire_timer_enable = true;
+	}
+
+	namespace misc {
+		inline bool fake_lag_enable = false;
+		inline int fake_lag_max = 6;
+		inline int fake_lag_jitter = 0;
 	}
 
 	namespace menu {
 		inline bool opened = false;
 		inline int x = 140, y = 140;
-		inline int w = 400, h = 300;
+		inline int w = 400, h = 400;
 	}
 }
