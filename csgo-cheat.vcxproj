@@ -89,6 +89,7 @@
   <ItemGroup>
     <ClCompile Include="core\features\aimbot\aimbot.cpp" />
     <ClCompile Include="core\features\aimbot\autowall.cpp" />
+    <ClCompile Include="core\features\antiaim\desync.cpp" />
     <ClCompile Include="core\features\misc\engine_prediction.cpp" />
     <ClCompile Include="core\features\misc\misc.cpp" />
     <ClCompile Include="core\features\visuals\chams.cpp" />

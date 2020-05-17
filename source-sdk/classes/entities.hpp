@@ -481,6 +481,11 @@ public:
 		return tr.entity == player || tr.flFraction > 0.97f;
 	}
 
+	void invalidate_bone_cache() {
+		*(unsigned int*)((DWORD)this + 0x2924) = 0xFF7FFFFF; // m_flLastBoneSetupTime = -FLT_MAX;
+		*(unsigned int*)((DWORD)this + 0x2690) = 0;
+	}
+
 	vec3_t get_bone_position(int bone) {
 		matrix_t bone_matrices[128];
 		if (setup_bones(bone_matrices, 128, 256, 0.0f))
@@ -594,6 +599,21 @@ public:
 			return this->team() != target->team();
 	}
 
+	float* pose_param() const {
+		static int _m_flPoseParameter = netvar_manager::get_net_var(fnv::hash("DT_BaseAnimating"), fnv::hash("m_flPoseParameter"));
+		return (float*)((uintptr_t)this + _m_flPoseParameter);
+	}
+	anim_layer* get_anim_overlays() {
+		return *(anim_layer * *)((DWORD)this + 0x2980);
+	}
+	anim_layer* get_anim_overlay(int i) {
+		if (i < 15)
+			return &get_anim_overlays()[i];
+		return nullptr;
+	}
+	int get_num_of_anim_overlays() {
+		return *(int*)((DWORD)this + 0x298C);
+	}
 };
 
 struct inferno_t : public entity_t {

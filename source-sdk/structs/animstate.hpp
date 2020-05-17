@@ -114,3 +114,19 @@ public:
 	float standing_head_height; //0x033C 
 	char pad_0x0340[0x4]; //0x0340
 };
+
+class anim_layer {
+public:
+	char pad_0000[20];
+	uint32_t order;
+	uint32_t sequence;
+	float prev_cycle;
+	float weight;
+	float weight_delta_rate;
+	float playback_rate;
+	float cycle;
+	void* owner;
+	char pad_0038[4];
+
+	anim_layer() {}
+};

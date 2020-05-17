@@ -34,3 +34,7 @@ namespace misc {
 		void fake_lag(bool& send_packet);
 	};
 }
+
+namespace anti_aim {
+	void desync(c_usercmd* cmd, bool& send_packet);
+}

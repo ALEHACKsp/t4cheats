@@ -136,6 +136,8 @@ bool __fastcall hooks::create_move::hook(void* ecx, void* edx, int input_sample_
 	auto old_sidemove = cmd->sidemove;
 
 	misc::movement::bunny_hop(cmd);
+	if (csgo::local_player && csgo::local_player->is_alive())
+		anti_aim::desync(cmd, send_packet);
 
 	prediction::start(cmd); {
 		if (csgo::local_player->is_alive()) {
@@ -145,6 +147,8 @@ bool __fastcall hooks::create_move::hook(void* ecx, void* edx, int input_sample_
 		}
 
 	} prediction::end();
+
+	send_packet ? csgo::angles::fake = cmd->viewangles : csgo::angles::real = cmd->viewangles;
 
 	math::correct_movement(old_viewangles, cmd, old_forwardmove, old_sidemove);
 
