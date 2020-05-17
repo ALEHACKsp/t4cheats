@@ -21,58 +21,65 @@ bool penetration = false;
 
 struct fire_bullet_data {
 	fire_bullet_data(const vec3_t& eye_pos) : src(eye_pos) { }
+
+	float current_damage = 0.f;
+	float trace_length = 0.f;
+	float trace_length_remaining = 0.f;
+	vec3_t direction;
 	vec3_t src;
 	trace_t enter_trace;
-	vec3_t direction;
 	trace_filter filter;
-	float trace_length;
-	float trace_length_remaining;
-	float current_damage;
-	int penetrate_count;
 };
 
-void bullet_type(float& maxRange, float& maxDistance, char* bulletType, bool sv_penetration_type) { //old pen system, sucks ass
+void bullet_type(float& max_range, float& max_distance, char* bulletType, bool sv_penetration_type) {
 	if (sv_penetration_type) {
-		maxRange = 35.0;
-		maxDistance = 3000.0;
+		max_range = 35.f;
+		max_distance = 3000.f;
+		return;
 	}
-	else {
-		if (!strcmp(bulletType, ("BULLET_PLAYER_338MAG"))) {
-			maxRange = 45.0;
-			maxDistance = 8000.0;
-		}
-		if (!strcmp(bulletType, ("BULLET_PLAYER_762MM"))) {
-			maxRange = 39.0;
-			maxDistance = 5000.0;
-		}
-		if (!strcmp(bulletType, ("BULLET_PLAYER_556MM")) || !strcmp(bulletType, ("BULLET_PLAYER_556MM_SMALL")) || !strcmp(bulletType, ("BULLET_PLAYER_556MM_BOX"))) {
-			maxRange = 35.0;
-			maxDistance = 4000.0;
-		}
-		if (!strcmp(bulletType, ("BULLET_PLAYER_57MM"))) {
-			maxRange = 30.0;
-			maxDistance = 2000.0;
-		}
-		if (!strcmp(bulletType, ("BULLET_PLAYER_50AE"))) {
-			maxRange = 30.0;
-			maxDistance = 1000.0;
-		}
-		if (!strcmp(bulletType, ("BULLET_PLAYER_357SIG")) || !strcmp(bulletType, ("BULLET_PLAYER_357SIG_SMALL")) || !strcmp(bulletType, ("BULLET_PLAYER_357SIG_P250")) || !strcmp(bulletType, ("BULLET_PLAYER_357SIG_MIN"))) {
-			maxRange = 25.0;
-			maxDistance = 800.0;
-		}
-		if (!strcmp(bulletType, ("BULLET_PLAYER_9MM"))) {
-			maxRange = 21.0;
-			maxDistance = 800.0;
-		}
-		if (!strcmp(bulletType, ("BULLET_PLAYER_45ACP"))) {
-			maxRange = 15.0;
-			maxDistance = 500.0;
-		}
-		if (!strcmp(bulletType, ("BULLET_PLAYER_BUCKSHOT"))) {
-			maxRange = 0.0;
-			maxDistance = 0.0;
-		}
+
+	switch (fnv::hash(bulletType)) {
+	case fnv::hash("BULLET_PLAYER_338MAG"):
+		max_range = 45.f;
+		max_distance = 8000.f;
+		break;
+	case fnv::hash("BULLET_PLAYER_762MM"):
+		max_range = 39.f;
+		max_distance = 5000.f;
+		break;
+	case fnv::hash("BULLET_PLAYER_556MM"):
+	case fnv::hash("BULLET_PLAYER_556MM_SMALL"):
+	case fnv::hash("BULLET_PLAYER_556MM_BOX"):
+		max_range = 35.f;
+		max_distance = 4000.f;
+		break;
+	case fnv::hash("BULLET_PLAYER_57MM"):
+		max_range = 30.f;
+		max_distance = 2000.f;
+		break;
+	case fnv::hash("BULLET_PLAYER_50AE"):
+		max_range = 30.f;
+		max_distance = 1000.f;
+		break;
+	case fnv::hash("BULLET_PLAYER_357SIG"):
+	case fnv::hash("BULLET_PLAYER_357SIG_SMALL"):
+	case fnv::hash("BULLET_PLAYER_357SIG_P250"):
+	case fnv::hash("BULLET_PLAYER_357SIG_MIN"):
+		max_range = 25.f;
+		max_distance = 800.f;
+		break;
+	case fnv::hash("BULLET_PLAYER_9MM"):
+		max_range = 21.f;
+		max_distance = 800.f;
+		break;
+	case fnv::hash("BULLET_PLAYER_45ACP"):
+		max_range = 15.f;
+		max_distance = 500.f;
+		break;
+	case fnv::hash("BULLET_PLAYER_BUCKSHOT"):
+		max_range = 0.f;
+		max_distance = 0.f;
+		break;
 	}
 }
 
@@ -82,66 +89,48 @@ void trace_line(vec3_t& start, vec3_t& end, unsigned int mask, player_t* ignore,
 	interfaces::trace_ray->trace_ray(ray, mask, &filter, ptr);
 }
 
-void clip_trace_to_player(const vec3_t& start, const vec3_t end, unsigned int mask, trace_filter* filter, trace_t* tr) {
-	static auto address = reinterpret_cast<DWORD>(utilities::pattern_scan("client_panorama.dll", "53 8B DC 83 EC 08 83 E4 F0 83 C4 04 55 8B 6B 04 89 6C 24 04 8B EC 81 EC ? ? ? ? 8B 43 10"));
-
-	if (!address)
+void clip_trace_to_player(player_t* player, const vec3_t& start, const vec3_t end, unsigned int mask, trace_filter* filter, trace_t* tr) {
+	if (!filter->ShouldHitEntity(player, mask))
 		return;
 
-	_asm {
-		MOV		EAX, filter
-		LEA		ECX, tr
-		PUSH	ECX
-		PUSH	EAX
-		PUSH	mask
-		LEA		EDX, end
-		LEA		ECX, start
-		CALL	address
-		ADD		ESP, 0xC
-	}
+	ray_t ray; ray.initialize(start, end);
+	trace_t trace;
+	interfaces::trace_ray->trace_ray(ray, mask, filter, &trace);
+
+	if (trace.flFraction < tr->flFraction)
+		tr = &trace;
 }
 
-void scale_damage(trace_t& trace, weapon_info_t* weapon_data, float& current_damage)
+void scale_damage(trace_t& trace, float weapon_armor_ratio, float& current_damage)
 {
-	auto armor_value = trace.entity->armor();
-	auto hitGroup = trace.hitGroup;
+	int armor_value = trace.entity->armor();
+	bool has_heavy_armor = trace.entity->has_heavy_armor();
 
-	auto has_armor = [&trace]()->bool {
-		auto target = trace.entity;
+	current_damage *= [&]() -> float {
 		switch (trace.hitGroup) {
-			case HITGROUP_HEAD:
-				return target->has_helmet();
-			case HITGROUP_GENERIC:
-			case HITGROUP_CHEST:
-			case HITGROUP_STOMACH:
-			case HITGROUP_LEFTARM:
-			case HITGROUP_RIGHTARM:
-				return target->armor() > 0;
-			default:
-				return false;
-		}
-	};
-
-	switch (hitGroup) {
-		case HITGROUP_HEAD: current_damage *= 4.f; break;
-		case HITGROUP_STOMACH: current_damage *= 1.25f; break;
+		case HITGROUP_HEAD:
+			return has_heavy_armor ? 2.f : 4.f;
+		case HITGROUP_STOMACH:
+			return 1.25f;
 		case HITGROUP_LEFTLEG:
-		case HITGROUP_RIGHTLEG: current_damage *= 0.75f; break;
-		default: break;
-	}
+		case HITGROUP_RIGHTLEG:
+			return .75f;
+		default:
+			return 1.f;
+		}
+	}();
 
-	if (armor_value > 0 && has_armor()) {
-		auto bonus_value = 1.f, armor_bonus = 0.5f, armor_ratio = weapon_data->flArmorRatio * .5f;
+	if ((armor_value > 0 && trace.hitGroup < HITGROUP_LEFTLEG) || (trace.hitGroup == HITGROUP_HEAD && trace.entity->has_helmet())) {
+		float armor_bonus = .5f, armor_ratio = weapon_armor_ratio * .5f;
 
-		if (trace.entity->has_heavy_armor()) {
-			armor_bonus = 0.33f;
-			armor_ratio *= 0.5f;
-			bonus_value = 0.33f;
+		if (has_heavy_armor) {
+			armor_bonus = .33f;
+			armor_ratio *= .5f;
 		}
 
-		auto new_damage = current_damage * armor_ratio;
+		float new_damage = current_damage * armor_ratio;
 
-		if (((current_damage - (current_damage * armor_ratio)) * (bonus_value * armor_bonus)) > armor_value)
+		if (((current_damage - (current_damage * armor_ratio)) * (has_heavy_armor ? .33 : 1.f * armor_bonus)) > armor_value)
 			new_damage = current_damage - (armor_value / armor_bonus);
 
 		current_damage = new_damage;
@@ -149,24 +138,26 @@ void scale_damage(trace_t& trace, weapon_info_t* weapon_data, float& current_dam
 }
 
 bool is_breakable(player_t* entity) {
-	c_client_class* client_class = entity->client_class();
-	if (!client_class)
-		return false;
-	return client_class->class_id == cbreakableprop || client_class->class_id == cbreakablesurface;
+	if (const auto client_class = entity->client_class())
+		return client_class->class_id == cbreakableprop || client_class->class_id == cbreakablesurface;
+
+	return false;
 }
 
 bool trace_to_exit(trace_t& enter, trace_t& exit, vec3_t start_pos, vec3_t direction) {
+	int first_contents = 0;
+	float current_distance = 0.f;
+
 	vec3_t start, end;
-	auto current_distance = 0.f;
-	auto first_contents = 0;
 
 	while (current_distance <= 90.f) {
 		current_distance += 4.f;
 		start = start_pos + direction * current_distance;
+
 		if (!first_contents)
 			first_contents = interfaces::trace_ray->get_point_contents(start, MASK_SHOT_HULL | CONTENTS_HITBOX, nullptr);
 
-		auto point_contents = interfaces::trace_ray->get_point_contents(start, MASK_SHOT_HULL | CONTENTS_HITBOX, nullptr);
+		int point_contents = interfaces::trace_ray->get_point_contents(start, MASK_SHOT_HULL | CONTENTS_HITBOX, nullptr);
 
 		if (!(point_contents & MASK_SHOT_HULL) || point_contents & CONTENTS_HITBOX && point_contents != first_contents) {
 			end = start - (direction * 4.f);
@@ -317,26 +308,24 @@ bool handle_bullet_penetration(player_t* player, weapon_info_t* weapon_data, tra
 }
 
 bool fire_bullet(player_t* player, vec3_t& direction, float& current_damage) {
-	auto weapon = player->active_weapon();
+	const auto weapon = player->active_weapon();
 	if (!weapon)
 		return false;
 
+	const auto weapon_data = weapon->get_weapon_data();
+	if (!weapon_data)
+		return false;
+
+	float current_distance = 0.f, penetration_power, penetrationDistance, maxRange, ff_damage_reduction_bullets, ff_damage_bullet_penetration;
 	vec3_t eye_position = player->get_eye_pos();
 
-	bool sv_penetration_type;
-	float currentDistance = 0.f, penetration_power, penetrationDistance, maxRange, ff_damage_reduction_bullets, ff_damage_bullet_penetration;
-
-	sv_penetration_type = interfaces::console->get_convar(("sv_penetration_type"))->numerical_value;
-	ff_damage_reduction_bullets = interfaces::console->get_convar(("ff_damage_reduction_bullets"))->float_value;
-	ff_damage_bullet_penetration = interfaces::console->get_convar(("ff_damage_bullet_penetration"))->float_value;
-	weapon_info_t* weapon_data = weapon->get_weapon_data();
+	bool sv_penetration_type = static_cast<bool>(interfaces::console->get_convar("sv_penetration_type")->numerical_value);
+	ff_damage_reduction_bullets = interfaces::console->get_convar("ff_damage_reduction_bullets")->float_value;
+	ff_damage_bullet_penetration = interfaces::console->get_convar("ff_damage_bullet_penetration")->float_value;
 	trace_t trace;
 	trace_filter filter;
 
 	filter.skip = player;
-
-	if (!weapon_data)
-		return false;
 
 	maxRange = weapon_data->flRange;
 
@@ -348,41 +337,51 @@ bool fire_bullet(player_t* player, vec3_t& direction, float& current_damage) {
 	int possible_hits = 4;
 
 	current_damage = weapon_data->iDamage;
+
 	while (possible_hits > 0 && current_damage >= 1.f) {
-		maxRange -= currentDistance;
+		maxRange -= current_distance;
 		vec3_t end = eye_position + direction * maxRange;
+
 		trace_line(eye_position, end, MASK_SHOT_HULL | CONTENTS_HITBOX, player, &trace);
-		clip_trace_to_player(eye_position, end + direction * 40.f, MASK_SHOT_HULL | CONTENTS_HITBOX, &filter, &trace);
-		surface_data_t* surface_data = interfaces::physics_surface->get_surface_data(trace.surface.surface_props);
+		clip_trace_to_player(player, eye_position, end + direction * 40.f, MASK_SHOT_HULL | CONTENTS_HITBOX, &filter, &trace);
+
 		if (trace.flFraction == 1.f)
 			break;
-		currentDistance += trace.flFraction * maxRange;
-		current_damage *= pow(weapon_data->flRangeModifier, (currentDistance / 500.f));
-		if (currentDistance > penetrationDistance && weapon_data->flPenetration > 0.f || surface_data->game_props.penetration_modifier < 0.1f)
+
+		current_distance += trace.flFraction * maxRange;
+		current_damage *= std::pow(weapon_data->flRangeModifier, (current_distance / 500.f));
+
+		if (current_distance > penetrationDistance && weapon_data->flPenetration > 0.f || interfaces::physics_surface->get_surface_data(trace.surface.surface_props)->game_props.penetration_modifier < .1f)
 			break;
+
 		bool able_to_deal_damage = (trace.hitGroup != HITGROUP_CHEST && trace.hitGroup != HITGROUP_GENERIC);
-		if (able_to_deal_damage && static_cast<player_t*>(trace.entity)->is_enemy(csgo::local_player)) {
-			scale_damage(trace, weapon_data, current_damage);
+
+		if (able_to_deal_damage && trace.entity->is_enemy(csgo::local_player)) {
+			scale_damage(trace, weapon_data->flArmorRatio, current_damage);
 			return true;
 		}
+
 		if (!handle_bullet_penetration(player, weapon_data, trace, eye_position, direction, possible_hits, current_damage, penetration_power, sv_penetration_type, ff_damage_reduction_bullets, ff_damage_bullet_penetration))
 			break;
 	}
 	return false;
 }
 
-float aimbot::autowall::can_hit(player_t* player, vec3_t point) { //basically what you need
+float aimbot::autowall::can_hit(player_t* player, vec3_t point) {
 	if (!player || !player->is_alive())
 		return -1.f;
+
 	fire_bullet_data data(player->get_eye_pos());
 	data.filter = trace_filter();
 	data.filter.skip = player;
+
 	vec3_t angles, direction;
 	vec3_t tmp = point - player->get_eye_pos();
-	float currentDamage = 0;
+
 	direction = tmp;
 	direction.normalize();
-	if (fire_bullet(player, direction, currentDamage))
-		return currentDamage;
-	return -1.f;
+
+	float current_damage = -1.f;
+	fire_bullet(player, direction, current_damage);
+	return current_damage;
 }
