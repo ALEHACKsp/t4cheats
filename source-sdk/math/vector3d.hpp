@@ -38,38 +38,36 @@ public:
 	vec3_t& operator+=(const vec3_t& v) {
 		x += v.x; y += v.y; z += v.z; return *this;
 	}
+
 	vec3_t& operator-=(const vec3_t& v) {
 		x -= v.x; y -= v.y; z -= v.z; return *this;
 	}
+
 	vec3_t& operator*=(float v) {
 		x *= v; y *= v; z *= v; return *this;
 	}
-	vec3_t operator+(const vec3_t& v) {
+
+	vec3_t operator+(const vec3_t& v) const {
 		return vec3_t{ x + v.x, y + v.y, z + v.z };
 	}
-	vec3_t operator-(const vec3_t& v) {
+
+	vec3_t operator-(const vec3_t& v) const {
 		return vec3_t{ x - v.x, y - v.y, z - v.z };
 	}
+
 	vec3_t operator*(float fl) const {
 		return vec3_t(x * fl, y * fl, z * fl);
 	}
+
 	vec3_t operator*(const vec3_t& v) const {
 		return vec3_t(x * v.x, y * v.y, z * v.z);
 	}
+
 	vec3_t& operator/=(float fl) {
 		x /= fl;
 		y /= fl;
 		z /= fl;
 		return *this;
-	}
-	auto operator-(const vec3_t& other) const -> vec3_t {
-		auto buf = *this;
-
-		buf.x -= other.x;
-		buf.y -= other.y;
-		buf.z -= other.z;
-
-		return buf;
 	}
 
 	auto operator/(float other) const {
@@ -90,6 +88,7 @@ public:
 	inline float Length2D() const {
 		return sqrt((x * x) + (y * y));
 	}
+
 	void crossproduct(vec3_t v1, vec3_t v2, vec3_t cross_p) const {
 		cross_p.x = (v1.y * v2.z) - (v1.z * v2.y); //i
 		cross_p.y = -((v1.x * v2.z) - (v1.z * v2.x)); //j
