@@ -40,6 +40,7 @@ namespace variables { //you maybe dont like my style of organizing, but i think 
 		inline bool fake_lag_enable = false;
 		inline int fake_lag_max = 6;
 		inline int fake_lag_jitter = 0;
+		inline bool clantag_spammer_enable = false;
 	}
 
 	namespace menu {

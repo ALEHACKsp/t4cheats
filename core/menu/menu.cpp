@@ -81,9 +81,16 @@ void visuals_window() {
 void misc_window() {
 	ImGui::BeginChild("Misc Child"); {
 		ImGui::Checkbox("Bunnyhop", &variables::bunnyhop);
+		ImGui::Separator();
 		ImGui::Checkbox("Fake lag enable", &variables::misc::fake_lag_enable);
 		ImGui::SliderInt("Fake lag max choke", &variables::misc::fake_lag_max, 0, 6);
 		ImGui::SliderInt("Fake lag jitter", &variables::misc::fake_lag_jitter, 0, 6);
+		ImGui::Separator();
+		ImGui::Checkbox("Clantag spammer", &variables::misc::clantag_spammer_enable);
+		static char clantag_text[15];
+		ImGui::InputText("Clantag", clantag_text, sizeof(clantag_text));
+		if (ImGui::Button("Apply clantag"))
+			utilities::set_clantag(clantag_text);
 	}
 	ImGui::EndChild();
 }

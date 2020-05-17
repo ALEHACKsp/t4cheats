@@ -56,6 +56,11 @@ std::uint8_t* utilities::pattern_scan(const char* module_name, const char* signa
     return nullptr;
 }
 
+void utilities::set_clantag(std::string clantag) {
+	static auto clantag_original = (int(__fastcall*)(const char*, const char*))pattern_scan("engine.dll", "53 56 57 8B DA 8B F9 FF 15");
+	clantag_original(clantag.c_str(), clantag.c_str());
+}
+
 std::string utilities::get_time_as_string() {
 	auto t = std::time(nullptr); auto tm = *std::localtime(&t);
 	std::ostringstream oss; oss << std::put_time(&tm, "%H:%M:%S");

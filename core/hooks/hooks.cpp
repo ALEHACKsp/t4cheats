@@ -139,6 +139,9 @@ bool __fastcall hooks::create_move::hook(void* ecx, void* edx, int input_sample_
 	if (csgo::local_player && csgo::local_player->is_alive())
 		anti_aim::desync(cmd, send_packet);
 
+	if (variables::misc::clantag_spammer_enable)
+		misc::clantag_spammer();
+
 	prediction::start(cmd); {
 		if (csgo::local_player->is_alive()) {
 			aimbot::run(cmd);
@@ -185,6 +188,7 @@ void __stdcall hooks::paint_traverse::hook(unsigned int panel, bool force_repain
 		break;
 	case fnv::hash("FocusOverlayPanel"):
 		interfaces::panel->set_mouse_input_enabled(panel, variables::menu::opened); //disable mouse input when in menu
+		interfaces::panel->set_keyboard_input_enabled(panel, variables::menu::opened);
 		break;
 	}
 
