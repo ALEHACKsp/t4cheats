@@ -28,25 +28,23 @@ void menu::init(HWND wnd) {
 	ImGui::GetStyle().GrabRounding = 0.0f;
 	ImGui::GetStyle().PopupRounding = 0.0f;
 	ImGui::GetStyle().ScrollbarRounding = 0.0f;
+	ImGui::GetStyle().ScrollbarSize = 8.f;
+	ImGui::GetStyle().WindowPadding = ImVec2(0, 8);
 
-	ImGui::GetStyle().WindowMinSize = ImVec2(300, 300);
+	ImGui::GetStyle().WindowMinSize = ImVec2(400, 300);
 
 	menu::caption = captions[rand() % 8];
 }
 
-void aimbot_window(bool* open) {
-	ImGui::SetNextWindowSize(ImVec2(300, 500));
-
-	ImGui::Begin("Aimbot", open, ImGuiWindowFlags_NoResize); {
+void aimbot_window() {
+	ImGui::BeginChild("Aimbot Child"); {
 
 	}
-	ImGui::End();
+	ImGui::EndChild();
 }
 
-void visuals_window(bool* open) {
-	ImGui::SetNextWindowSize(ImVec2(300, 500));
-
-	ImGui::Begin("Visuals", open, ImGuiWindowFlags_NoResize); {
+void visuals_window() {
+	ImGui::BeginChild("Visuals Child"); {
 		ImGui::Checkbox("Esp enable", &variables::visuals::esp_enable);
 		ImGui::Checkbox("Esp show name", &variables::visuals::esp_show_name);
 		ImGui::Checkbox("Esp show box", &variables::visuals::esp_show_box);
@@ -77,25 +75,22 @@ void visuals_window(bool* open) {
 		ImGui::Checkbox("Fire timer", &variables::visuals::fire_timer_enable);
 
 	}
-	ImGui::End();
+	ImGui::EndChild();
 }
 
-void misc_window(bool* open) {
-	ImGui::SetNextWindowSize(ImVec2(300, 500));
-
-	ImGui::Begin("Misc", open, ImGuiWindowFlags_NoResize); {
+void misc_window() {
+	ImGui::BeginChild("Misc Child"); {
 		ImGui::Checkbox("Bunnyhop", &variables::bunnyhop);
 		ImGui::Checkbox("Fake lag enable", &variables::misc::fake_lag_enable);
 		ImGui::SliderInt("Fake lag max choke", &variables::misc::fake_lag_max, 0, 6);
 		ImGui::SliderInt("Fake lag jitter", &variables::misc::fake_lag_jitter, 0, 6);
 	}
-	ImGui::End();
+	ImGui::EndChild();
 }
 
-void config_window(bool* open) {
-	ImGui::SetNextWindowSize(ImVec2(300, 300));
+void config_window() {
 	static auto is_configs_loaded = false;
-	ImGui::Begin("Config", open, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse); {
+	ImGui::BeginChild("Config Child"); {
 		static std::vector<std::string> configs;
 		static auto load_configs = []() {
 			std::vector<std::string> items = {};
@@ -118,7 +113,6 @@ void config_window(bool* open) {
 		ImGui::SameLine();
 		if (ImGui::Button("Create")) {
 			current_config = std::string(config_name);
-
 			config::save(current_config);
 			is_configs_loaded = false;
 			memset(config_name, 0, 32);
@@ -147,21 +141,32 @@ void config_window(bool* open) {
 		if (ImGui::Button("Refresh"))
 			is_configs_loaded = false;
 	}
-	ImGui::End();
+	ImGui::EndChild();
 }
 
 void menu::render() {
 	if (font)
 		ImGui::PushFont(font);
 	if (variables::menu::opened) {
-		bool aimbot_window_open = true;
-		aimbot_window(&aimbot_window_open);
-		bool visuals_window_open = true;
-		visuals_window(&visuals_window_open);
-		bool misc_window_open = true;
-		misc_window(&misc_window_open);
-		bool config_window_open = true;
-		config_window(&config_window_open);
+		std::string text = "t4cheats - " + caption;
+		static int tab = 0;
+		ImGui::Begin(text.c_str(), nullptr, ImGuiWindowFlags_NoCollapse); {
+			ImGui::Columns(2, 0, false);
+			ImGui::SetColumnWidth(0, 65);
+			if (ImGui::Button("Aimbot", ImVec2(50, 25)))  tab = 0;
+			if (ImGui::Button("Visuals", ImVec2(50, 25))) tab = 1;
+			if (ImGui::Button("Misc", ImVec2(50, 25)))    tab = 2;
+			if (ImGui::Button("Config", ImVec2(50, 25)))  tab = 3;
+			ImGui::NextColumn();
+			switch (tab) {
+				case 0: aimbot_window(); break;
+				case 1: visuals_window(); break;
+				case 2: misc_window(); break;
+				case 3: config_window(); break;
+				default: break;
+			}
+		}
+		ImGui::End();
 	}
 	if (font)
 		ImGui::PopFont();
