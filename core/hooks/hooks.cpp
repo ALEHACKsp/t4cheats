@@ -8,10 +8,22 @@ hooks::create_move::fn create_move_original = nullptr;
 hooks::paint_traverse::fn paint_traverse_original = nullptr;
 hooks::draw_model_execute::fn dme_original = nullptr;
 
+uint8_t* present_address;
+hooks::present_fn present_original;
+WNDPROC wndproc_original;
+HWND wnd;
+
 bool hooks::initialize() {
 	auto create_move_target = reinterpret_cast<void*>(get_virtual(interfaces::clientmode, 24));
 	auto paint_traverse_target = reinterpret_cast<void*>(get_virtual(interfaces::panel, 41));
 	auto draw_model_execute = reinterpret_cast<void*>(get_virtual(interfaces::model_render, 21));
+
+	wnd = FindWindowW(L"Valve001", NULL);
+
+	wndproc_original = reinterpret_cast<WNDPROC>(SetWindowLongW(wnd, GWL_WNDPROC, reinterpret_cast<LONG>(wndproc)));
+	present_address = utilities::pattern_scan("gameoverlayrenderer.dll", "FF 15 ? ? ? ? 8B F8 85 DB") + 0x2;
+	present_original = **reinterpret_cast<present_fn**>(present_address);
+	**reinterpret_cast<void***>(present_address) = reinterpret_cast<void*>(&present);
 
 	if (MH_Initialize() != MH_OK) {
 		throw std::runtime_error("failed to initialize MH_Initialize.");
@@ -44,8 +56,67 @@ bool hooks::initialize() {
 
 void hooks::release() {
 	MH_Uninitialize();
-
+	**reinterpret_cast<void***>(present_address) = reinterpret_cast<void*>(present_original);
+	SetWindowLongW(FindWindowW(L"Valve001", NULL), GWL_WNDPROC, reinterpret_cast<LONG>(wndproc_original));
 	MH_DisableHook(MH_ALL_HOOKS);
+}
+
+extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
+LRESULT __stdcall hooks::wndproc(HWND hwnd, UINT message, WPARAM wparam, LPARAM	 lparam) noexcept {
+	if (variables::menu::opened && ImGui_ImplWin32_WndProcHandler(hwnd, message, wparam, lparam))
+		return true;
+	return CallWindowProcW(wndproc_original, hwnd, message, wparam, lparam);
+}
+
+long __stdcall hooks::present(IDirect3DDevice9* pDevice, RECT* source_rect, RECT* dest_rect, HWND dest_window_override, RGNDATA* dirty_region) noexcept {
+	static uintptr_t gameoverlay_return_address = NULL;
+	if (!gameoverlay_return_address) {
+		MEMORY_BASIC_INFORMATION info;
+		VirtualQuery(_ReturnAddress(), &info, sizeof(MEMORY_BASIC_INFORMATION));
+		char mod[MAX_PATH];
+		GetModuleFileNameA((HMODULE)info.AllocationBase, mod, MAX_PATH);
+		if (strstr(mod, "gameoverlay"))
+			gameoverlay_return_address = (uintptr_t)(_ReturnAddress());
+	}
+	if (gameoverlay_return_address != (uintptr_t)(_ReturnAddress()))
+		return present_original(pDevice, source_rect, dest_rect, dest_window_override, dirty_region);
+	{ //disable csgo's color grading
+		IDirect3DVertexDeclaration9* vertDec;
+		IDirect3DVertexShader9* vertShader;
+		pDevice->GetVertexDeclaration(&vertDec);
+		pDevice->GetVertexShader(&vertShader);
+		pDevice->SetVertexDeclaration(nullptr);
+		pDevice->SetVertexShader(nullptr);
+		DWORD colorwrite, srgbwrite;
+		pDevice->GetRenderState(D3DRS_COLORWRITEENABLE, &colorwrite);
+		pDevice->GetRenderState(D3DRS_SRGBWRITEENABLE, &srgbwrite);
+		pDevice->SetRenderState(D3DRS_COLORWRITEENABLE, 0xffffffff);
+		pDevice->SetRenderState(D3DRS_SRGBWRITEENABLE, false);
+		pDevice->SetSamplerState(NULL, D3DSAMP_ADDRESSU, D3DTADDRESS_WRAP);
+		pDevice->SetSamplerState(NULL, D3DSAMP_ADDRESSV, D3DTADDRESS_WRAP);
+		pDevice->SetSamplerState(NULL, D3DSAMP_ADDRESSW, D3DTADDRESS_WRAP);
+		pDevice->SetSamplerState(NULL, D3DSAMP_SRGBTEXTURE, NULL);
+		pDevice->SetRenderState(D3DRS_COLORWRITEENABLE, colorwrite);
+		pDevice->SetRenderState(D3DRS_SRGBWRITEENABLE, srgbwrite);
+		pDevice->SetVertexDeclaration(vertDec);
+		pDevice->SetVertexShader(vertShader);
+	}
+	csgo::device = pDevice;
+	static bool init = false;
+	if (!init) {
+		menu::init(wnd);
+		init = true;
+	}
+	menu::toggle();
+	ImGui_ImplDX9_NewFrame();
+	ImGui_ImplWin32_NewFrame();
+	ImGui::NewFrame(); { //all ImGui rendering in here
+		menu::render();
+	}
+	ImGui::Render();
+	ImGui_ImplDX9_RenderDrawData(ImGui::GetDrawData());
+	return present_original(pDevice, source_rect, dest_rect, dest_window_override, dirty_region);
 }
 
 bool __fastcall hooks::create_move::hook(void* ecx, void* edx, int input_sample_frametime, c_usercmd* cmd) {
@@ -106,13 +177,9 @@ void __stdcall hooks::paint_traverse::hook(unsigned int panel, bool force_repain
 			render::draw_outline(10, 10, watermark_width + 9, 19, color(25, 25, 25, 150));
 			render::draw_gradient(color(255, 100, 0, 150), color(255, 200, 0, 150), 10, 10, watermark_width + 9, 1, true);
 			render::draw_text_string(15, 13, render::fonts::main, watermark_text, false, color::white(255));;
-
-			menu::toggle();
-			menu::render();
 		}
 		break;
 	case fnv::hash("FocusOverlayPanel"):
-		//interfaces::panel->set_keyboard_input_enabled(panel, variables::menu::opened); //uncomment if you dont want to be able to walk when in menu
 		interfaces::panel->set_mouse_input_enabled(panel, variables::menu::opened); //disable mouse input when in menu
 		break;
 	}

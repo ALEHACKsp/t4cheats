@@ -23,6 +23,9 @@
 #include "../../dependencies/math/math.hpp"
 #include "../../dependencies/utilities/renderer/renderer.hpp"
 #include "../../dependencies/utilities/console/console.hpp"
+#include "../../core/menu/imgui/imgui.h"
+#include "../../core/menu/imgui/imgui_impl_dx9.h"
+#include "../../core/menu/imgui/imgui_impl_win32.h"
 #include "../utilities/csgo.hpp"
 
 //interfaces
@@ -39,4 +42,5 @@
 
 namespace csgo {
 	extern player_t* local_player;
+	extern IDirect3DDevice9* device;
 }
