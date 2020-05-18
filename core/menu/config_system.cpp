@@ -55,6 +55,7 @@ void config::save(const std::string name) {
 	save[config_header]["crosshair_outline"] = variables::visuals::crosshair_outline;
 	save[config_header]["crosshair_recoil"] = variables::visuals::crosshair_recoil;
 	save[config_header]["esp_enable"] = variables::visuals::esp_enable;
+	save[config_header]["esp_enemies_only"] = variables::visuals::esp_enemies_only;
 	save[config_header]["esp_show_box"] = variables::visuals::esp_show_box;
 	save[config_header]["esp_show_headdot"] = variables::visuals::esp_show_headdot;
 	save[config_header]["esp_show_healthbar"] = variables::visuals::esp_show_healthbar;
@@ -126,6 +127,7 @@ void config::load(const std::string name) {
 	variables::visuals::crosshair_outline = load[config_header]["crosshair_outline"].asBool();
 	variables::visuals::crosshair_recoil = load[config_header]["crosshair_recoil"].asBool();
 	variables::visuals::esp_enable = load[config_header]["esp_enable"].asBool();
+	variables::visuals::esp_enemies_only = load[config_header]["esp_enemies_only"].asBool();
 	variables::visuals::esp_show_box = load[config_header]["esp_show_box"].asBool();
 	variables::visuals::esp_show_headdot = load[config_header]["esp_show_headdot"].asBool();
 	variables::visuals::esp_show_healthbar = load[config_header]["esp_show_healthbar"].asBool();

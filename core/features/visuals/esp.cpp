@@ -135,6 +135,9 @@ void visuals::esp::draw() {
 		if (!entity || !entity->is_player() || entity->dormant() || !entity->is_alive() || entity == csgo::local_player) //dont draw esp for localplayer for now
 			continue;
 
+		if (variables::visuals::esp_enemies_only && !entity->is_enemy(csgo::local_player))
+			continue;
+
 		bbox = get_bounds(entity);
 		if (bbox.right == 0 || bbox.bottom == 0) //if box is out of bounds, skip
 			continue;

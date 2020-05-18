@@ -14,6 +14,7 @@ namespace variables { //you maybe dont like my style of organizing, but i think 
 	}
 	namespace visuals {
 		inline bool esp_enable = false;
+		inline bool esp_enemies_only = true;
 		inline bool esp_show_name = true;
 		inline bool esp_show_box = true;
 		inline bool esp_show_weapon = true;

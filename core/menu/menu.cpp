@@ -46,6 +46,7 @@ void aimbot_window() {
 void visuals_window() {
 	ImGui::BeginChild("Visuals Child"); {
 		ImGui::Checkbox("Esp enable", &variables::visuals::esp_enable);
+		ImGui::Checkbox("Esp enemies only", &variables::visuals::esp_enemies_only);
 		ImGui::Checkbox("Esp show name", &variables::visuals::esp_show_name);
 		ImGui::Checkbox("Esp show box", &variables::visuals::esp_show_box);
 		ImGui::Checkbox("Esp show healthbar", &variables::visuals::esp_show_healthbar);
