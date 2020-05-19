@@ -2,8 +2,6 @@
 
 namespace csgo {
 	player_t* local_player = nullptr;
-	vec3_t angles::fake = { 0, 0, 0 };
-	vec3_t angles::real = { 0, 0, 0 };
 
 	namespace fonts {
 		unsigned long watermark_font;

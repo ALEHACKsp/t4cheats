@@ -43,11 +43,4 @@
 
 namespace csgo {
 	extern player_t* local_player;
-	extern IDirect3DDevice9* device;
-	namespace angles {
-		extern vec3_t fake;
-		extern matrix_t* fake_matrix;
-		extern vec3_t real;
-		extern matrix_t* real_matrix;
-	}
 }

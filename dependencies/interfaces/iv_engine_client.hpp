@@ -1,10 +1,14 @@
 #pragma once
+
 #include <cstdint>
+
 #include "../../source-sdk/math/vector3d.hpp"
 #include "../../source-sdk/math/vector2d.hpp"
 #include "../../source-sdk/math/view_matrix.hpp"
 #include "../../source-sdk/classes/net_channel.hpp"
-#include "../../dependencies/utilities/utilities.hpp"
+
+#include "../utilities/utilities.hpp"
+#include "../utilities/virtual_method.h"
 
 struct player_info_t {
 	int64_t __pad0;
@@ -74,6 +78,8 @@ public:
 		using original_fn = view_matrix_t & (__thiscall*)(iv_engine_client*);
 		return (*(original_fn * *)this)[37](this);
 	}
+
+	virtual_method(void*, get_bsp_tree_query(), 43, (this))
 
 	bool is_taking_screenshot() {
 		using original_fn = bool(__thiscall*)(iv_engine_client*);

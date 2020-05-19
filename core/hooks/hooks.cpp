@@ -4,89 +4,25 @@
 #include "../features/features.hpp"
 #include "../features/misc/engine_prediction.hpp"
 #include "../menu/menu.hpp"
+#include "../../dependencies/utilities/virtual_method.h"
 
-hooks::create_move::fn create_move_original = nullptr;
-hooks::paint_traverse::fn paint_traverse_original = nullptr;
-hooks::draw_model_execute::fn dme_original = nullptr;
+static std::uintptr_t reset_address;
+static HWND wnd;
 
-uint8_t* present_address;
-hooks::present_fn present_original;
-WNDPROC wndproc_original;
-HWND wnd;
+HRESULT D3DAPI reset(IDirect3DDevice9* device, D3DPRESENT_PARAMETERS* params)
+{
+	ImGui_ImplDX9_InvalidateDeviceObjects();
+	auto result = hooks::reset_original(device, params);
+	ImGui_ImplDX9_CreateDeviceObjects();
 
-bool hooks::initialize() {
-	void* create_move_target = reinterpret_cast<void*>(get_virtual(interfaces::clientmode, 24));
-	void* paint_traverse_target = reinterpret_cast<void*>(get_virtual(interfaces::panel, 41));
-	void* draw_model_execute = reinterpret_cast<void*>(get_virtual(interfaces::model_render, 21));
-
-	wnd = FindWindowW(L"Valve001", NULL);
-
-	wndproc_original = reinterpret_cast<WNDPROC>(SetWindowLongW(wnd, GWL_WNDPROC, reinterpret_cast<LONG>(wndproc)));
-	present_address = utilities::pattern_scan("gameoverlayrenderer.dll", "FF 15 ? ? ? ? 8B F8 85 DB") + 0x2;
-	present_original = **reinterpret_cast<present_fn**>(present_address);
-	**reinterpret_cast<void***>(present_address) = reinterpret_cast<void*>(&present);
-
-	if (MH_Initialize() != MH_OK) {
-		throw std::runtime_error("failed to initialize MH_Initialize.");
-		return false;
-	}
-
-	if (MH_CreateHook(create_move_target, &create_move::hook, reinterpret_cast<void**>(&create_move_original)) != MH_OK) {
-		throw std::runtime_error("failed to initialize create_move. (outdated index?)");
-		return false;
-	}
-
-	if (MH_CreateHook(paint_traverse_target, &paint_traverse::hook, reinterpret_cast<void**>(&paint_traverse_original)) != MH_OK) {
-		throw std::runtime_error("failed to initialize paint_traverse. (outdated index?)");
-		return false;
-	}
-
-	if (MH_CreateHook(draw_model_execute, &draw_model_execute::hook, reinterpret_cast<void**>(&dme_original)) != MH_OK) {
-		throw std::runtime_error("failed to initialize draw_model_execute. (outdated index?)");
-		return false;
-	}
-
-	if (MH_EnableHook(MH_ALL_HOOKS) != MH_OK) {
-		throw std::runtime_error("failed to enable hooks.");
-		return false;
-	}
-
-	console::log("[setup] hooks initialized!\n");
-	return true;
+	return result;
 }
 
-void hooks::release() {
-	interfaces::panel->set_mouse_input_enabled(true);
-	interfaces::input->m_fCameraInThirdPerson = false;
-
-	MH_Uninitialize();
-	MH_DisableHook(MH_ALL_HOOKS);
-
-	**reinterpret_cast<void***>(present_address) = present_original;
-	SetWindowLongPtrA(wnd, GWLP_WNDPROC, LONG_PTR(wndproc_original));
-
-	ImGui_ImplDX9_Shutdown();
-	ImGui_ImplWin32_Shutdown();
-	ImGui::DestroyContext();
-}
-
-extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-
-LRESULT __stdcall hooks::wndproc(HWND hwnd, UINT message, WPARAM wparam, LPARAM	 lparam) noexcept {
-	if (GetAsyncKeyState(VK_INSERT) & 1) // switch opened state when menu key 'INSERT' is pressed
-		variables::menu::opened = !variables::menu::opened;
-
-	if (variables::menu::opened && ImGui_ImplWin32_WndProcHandler(hwnd, message, wparam, lparam))
-		return true;
-
-	return CallWindowProcW(wndproc_original, hwnd, message, wparam, lparam);
-}
-
-long __stdcall hooks::present(IDirect3DDevice9* pDevice, RECT* source_rect, RECT* dest_rect, HWND dest_window_override, RGNDATA* dirty_region) noexcept {
+HRESULT D3DAPI present(IDirect3DDevice9* device, const RECT* source, const RECT* dest, HWND window_override, const RGNDATA* dirty_region) {
 	static const auto once = [&]() {
 		ImGui::CreateContext();
 		ImGui_ImplWin32_Init(wnd);
-		ImGui_ImplDX9_Init(pDevice);
+		ImGui_ImplDX9_Init(device);
 
 		menu::init();
 
@@ -94,7 +30,7 @@ long __stdcall hooks::present(IDirect3DDevice9* pDevice, RECT* source_rect, RECT
 	}();
 
 	IDirect3DVertexDeclaration9* vertexDeclaration;
-	pDevice->GetVertexDeclaration(&vertexDeclaration);
+	device->GetVertexDeclaration(&vertexDeclaration);
 
 	ImGui_ImplDX9_NewFrame();
 	ImGui_ImplWin32_NewFrame();
@@ -106,21 +42,32 @@ long __stdcall hooks::present(IDirect3DDevice9* pDevice, RECT* source_rect, RECT
 	ImGui::Render();
 	ImGui_ImplDX9_RenderDrawData(ImGui::GetDrawData());
 
-	pDevice->SetVertexDeclaration(vertexDeclaration);
+	device->SetVertexDeclaration(vertexDeclaration);
 	vertexDeclaration->Release();
 
-	return present_original(pDevice, source_rect, dest_rect, dest_window_override, dirty_region);
+	return hooks::present_original(device, source, dest, window_override, dirty_region);
 }
 
-bool __fastcall hooks::create_move::hook(void* ecx, void* edx, int input_sample_frametime, c_usercmd* cmd) {
-	create_move_original(input_sample_frametime, cmd);
+LRESULT __stdcall wnd_proc(HWND window, UINT message, WPARAM wparam, LPARAM lparam) {
+	if (GetAsyncKeyState(VK_INSERT) & 1)
+		variables::menu::opened = !variables::menu::opened;
+
+	LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+	ImGui_ImplWin32_WndProcHandler(window, message, wparam, lparam);
+	interfaces::inputsystem->enable_input(!variables::menu::opened);
+
+	return CallWindowProc(hooks::wnd_proc_original, window, message, wparam, lparam);
+}
+
+bool __fastcall create_move(void* ecx, void* edx, int input_sample_frametime, c_usercmd* cmd) {
+	bool result = hooks::original_create_move(ecx, input_sample_frametime, cmd);
 
 	if (!cmd || !cmd->command_number)
-		return create_move_original(input_sample_frametime, cmd);
+		return result;
 
 	csgo::local_player = reinterpret_cast<player_t*>(interfaces::entity_list->get_client_entity(interfaces::engine->get_local_player()));
 
-	uintptr_t* frame_pointer;
+	std::uintptr_t* frame_pointer;
 	__asm mov frame_pointer, ebp;
 	bool& send_packet = *reinterpret_cast<bool*>(*frame_pointer - 0x1C);
 
@@ -146,8 +93,6 @@ bool __fastcall hooks::create_move::hook(void* ecx, void* edx, int input_sample_
 			misc::movement::fake_lag(send_packet);
 	}
 
-	send_packet ? csgo::angles::fake = cmd->viewangles : csgo::angles::real = cmd->viewangles;
-
 	math::correct_movement(old_viewangles, cmd, old_forwardmove, old_sidemove);
 
 	cmd->forwardmove = std::clamp(cmd->forwardmove, -450.0f, 450.0f);
@@ -162,7 +107,36 @@ bool __fastcall hooks::create_move::hook(void* ecx, void* edx, int input_sample_
 	return false;
 }
 
-void __stdcall hooks::paint_traverse::hook(unsigned int panel, bool force_repaint, bool allow_force) {
+struct renderable_info {
+	entity_t* renderable;
+	std::byte pad_18[18];
+	std::uint16_t flags;
+	std::uint16_t flags2;
+};
+
+int __fastcall list_leaves_in_box(void* ecx, void*, const vec3_t& mins, const vec3_t& maxs, unsigned short* list, int list_max) {
+	static const auto list_leaves = utilities::pattern_scan("client_panorama.dll", "56 52 FF 50 18") + 5;
+
+	if (variables::visuals::chams_enable && std::uintptr_t(_ReturnAddress()) == *list_leaves) {
+		if (auto info = *reinterpret_cast<renderable_info**>(std::uintptr_t(_AddressOfReturnAddress()) + 0x14); info && info->renderable) {
+			if (auto entity = virtual_method_handler::call<entity_t*, 7>(info->renderable - 4); entity && entity->is_player()) {
+				info->flags &= ~0x100;
+				info->flags2 |= 0x40;
+
+				constexpr float maxCoord = 16384.f;
+				constexpr vec3_t min{ -maxCoord, -maxCoord, -maxCoord };
+				constexpr vec3_t max{ maxCoord, maxCoord, maxCoord };
+
+				return hooks::original_list_leaves_in_box(ecx, std::cref(min), std::cref(max), list, list_max);
+			}
+		}
+	}
+
+	return hooks::original_list_leaves_in_box(ecx, std::cref(mins), std::cref(maxs), list, list_max);
+}
+
+
+void __stdcall paint_traverse(unsigned int panel, bool force_repaint, bool allow_force) {
 	switch (fnv::hash(interfaces::panel->get_panel_name(panel))) {
 	case fnv::hash("MatSystemTopPanel"): {
 		if (interfaces::engine->is_in_game() && csgo::local_player) {
@@ -181,24 +155,83 @@ void __stdcall hooks::paint_traverse::hook(unsigned int panel, bool force_repain
 		render::draw_text_string(15, 13, render::fonts::main, watermark_text, false, color::white(255));;
 	}
 	break;
-	case fnv::hash("FocusOverlayPanel"):
-		interfaces::panel->set_mouse_input_enabled(panel, variables::menu::opened); //disable mouse input when in menu
-		interfaces::panel->set_keyboard_input_enabled(panel, variables::menu::opened);
-		break;
-	default:
-		break;
 	}
 
-	paint_traverse_original(interfaces::panel, panel, force_repaint, allow_force);
+	hooks::original_paint_traverse(interfaces::panel, panel, force_repaint, allow_force);
 }
 
-void __fastcall hooks::draw_model_execute::hook(void* ecx, void*, void* ctx, void* state, const model_render_info_t& info, matrix_t* custom_bone_to_world)
+void __stdcall draw_model_execute(void* ctx, void* state, const model_render_info_t& info, matrix_t* custom_bone_to_world)
 {
 	if (!csgo::local_player || interfaces::studio_render->is_force_material_override())
-		return dme_original(ecx, ctx, state, info, custom_bone_to_world);
+		return hooks::original_draw_model_execute(interfaces::model_render, ctx, state, info, custom_bone_to_world);
 
-	if (visuals::chams::render(ecx, ctx, state, info, custom_bone_to_world))
-		dme_original(ecx, ctx, state, info, custom_bone_to_world);
+	if (visuals::chams::render(ctx, state, info, custom_bone_to_world))
+		hooks::original_draw_model_execute(interfaces::model_render, ctx, state, info, custom_bone_to_world);
 
 	interfaces::studio_render->forced_material_override(nullptr);
+}
+
+void __stdcall lock_cursor()
+{
+	if (variables::menu::opened)
+		return interfaces::surface->unlock_cursor();
+
+	return hooks::original_lock_cursor();
+}
+
+#define hook_method(target, function, original) \
+if (MH_CreateHook(reinterpret_cast<void*>(target), &function, reinterpret_cast<void**>(&original)) != MH_OK) { \
+    MessageBoxA(nullptr, "failed to intialize hook", "t4cheats", MB_OK | MB_ICONERROR); \
+    std::exit(EXIT_FAILURE); \
+}
+
+bool hooks::initialize() {
+	auto get_virtual = [](void* base, std::size_t index) -> void* {
+		return reinterpret_cast<void*>(static_cast<unsigned int>((*reinterpret_cast<int**>(base))[index]));
+	};
+
+	wnd = FindWindowW(L"Valve001", NULL);
+	wnd_proc_original = WNDPROC(SetWindowLongPtr(wnd, GWLP_WNDPROC, LONG_PTR(::wnd_proc)));
+
+	reset_address = *reinterpret_cast<std::uintptr_t*>(utilities::pattern_scan("gameoverlayrenderer.dll", "53 57 C7 45") + 11);
+
+	reset_original = *reinterpret_cast<decltype(reset_original)*>(reset_address);
+	*reinterpret_cast<decltype(reset)**>(reset_address) = reset;
+
+	present_original = *reinterpret_cast<decltype(present_original)*>(reset_address + 4);
+	*reinterpret_cast<decltype(present)**>(reset_address + 4) = present;
+
+	if (MH_Initialize() != MH_OK) {
+		throw std::runtime_error("failed to initialize MH_Initialize.");
+		return false;
+	}
+
+	hook_method(get_virtual(interfaces::clientmode, 24), create_move, original_create_move)
+	hook_method(get_virtual(interfaces::engine->get_bsp_tree_query(), 6), list_leaves_in_box, original_list_leaves_in_box)
+	hook_method(get_virtual(interfaces::panel, 41), paint_traverse, original_paint_traverse)
+	hook_method(get_virtual(interfaces::model_render, 21), draw_model_execute, original_draw_model_execute)
+	hook_method(get_virtual(interfaces::surface, 67), lock_cursor, original_lock_cursor)
+
+	if (MH_EnableHook(MH_ALL_HOOKS) != MH_OK) {
+		throw std::runtime_error("failed to enable hooks.");
+		return false;
+	}
+
+	console::log("[setup] hooks initialized!\n");
+	return true;
+}
+
+void hooks::release() {
+	interfaces::surface->unlock_cursor();
+	interfaces::input->m_fCameraInThirdPerson = false;
+
+	MH_Uninitialize();
+	MH_DisableHook(MH_ALL_HOOKS);
+
+	*reinterpret_cast<void**>(reset_address + 4) = present_original;
+	SetWindowLongPtrA(wnd, GWLP_WNDPROC, LONG_PTR(wnd_proc_original));
+
+	ImGui_ImplDX9_Shutdown();
+	ImGui_ImplWin32_Shutdown();
+	ImGui::DestroyContext();
 }

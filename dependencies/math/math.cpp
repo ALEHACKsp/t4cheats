@@ -2,29 +2,25 @@
 
 //aimtux
 void math::correct_movement(vec3_t old_angles, c_usercmd* cmd, float old_forwardmove, float old_sidemove) {
-	float delta_view;
-	float f1;
-	float f2;
+	float delta_view = 0.f;
+	float f1 = old_angles.y;
+	float f2 = cmd->viewangles.y;
 
 	if (old_angles.y < 0.f)
-		f1 = 360.0f + old_angles.y;
-	else
-		f1 = old_angles.y;
+		f1 += 360.f;
 
 	if (cmd->viewangles.y < 0.0f)
-		f2 = 360.0f + cmd->viewangles.y;
-	else
-		f2 = cmd->viewangles.y;
+		f2 += 360.f;
 
 	if (f2 < f1)
-		delta_view = abs(f2 - f1);
+		delta_view = std::abs(f2 - f1);
 	else
-		delta_view = 360.0f - abs(f1 - f2);
+		delta_view = 360.f - std::abs(f1 - f2);
 
-	delta_view = 360.0f - delta_view;
+	delta_view = 360.f - delta_view;
 
-	cmd->forwardmove = cos(DEG2RAD(delta_view)) * old_forwardmove + cos(DEG2RAD(delta_view + 90.f)) * old_sidemove;
-	cmd->sidemove = sin(DEG2RAD(delta_view)) * old_forwardmove + sin(DEG2RAD(delta_view + 90.f)) * old_sidemove;
+	cmd->forwardmove = std::cos(DEG2RAD(delta_view)) * old_forwardmove + cos(DEG2RAD(delta_view + 90.f)) * old_sidemove;
+	cmd->sidemove = std::sin(DEG2RAD(delta_view)) * old_forwardmove + sin(DEG2RAD(delta_view + 90.f)) * old_sidemove;
 }
 
 vec3_t math::calculate_angle(vec3_t& a, vec3_t& b) {
