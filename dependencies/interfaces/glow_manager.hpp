@@ -4,12 +4,13 @@
 class glow_object_definition_t {
 public:
 	void set(float r, float g, float b, float a) {
-		color = vec3_t(r, g, b);
+		color = vec3_t{ r, g, b };
 		alpha = a;
 		render_when_occluded = true;
 		render_when_unoccluded = false;
 		bloom_amount = 1.0f;
 	}
+
 	bool unused() {
 		return next_free_slot != -2;
 	}

@@ -112,10 +112,12 @@ class player_t;
 #define MASK_NPCWORLDSTATIC		(CONTENTS_SOLID|CONTENTS_WINDOW|CONTENTS_MONSTERCLIP|CONTENTS_GRATE) 					/**< just the world, used for route rebuilding */
 #define MASK_SPLITAREAPORTAL	(CONTENTS_WATER|CONTENTS_SLIME) 									/**< These are things that can split areaportals */
 
-class __declspec(align(16))VectorAligned : public vec3_t {
+class vec3_t_aligned : public vec3_t {
 public:
-	VectorAligned& operator=(const vec3_t& vOther) {
-		init(vOther.x, vOther.y, vOther.z);
+	vec3_t_aligned& operator=(const vec3_t& v) {
+		x = v.x;
+		y = v.y;
+		z = v.z;
 		return *this;
 	}
 
@@ -125,12 +127,11 @@ public:
 class IHandleEntity;
 
 struct ray_t {
-	VectorAligned m_start; // starting point, centered within the extents
-	VectorAligned m_delta; // direction + length of the ray
-	VectorAligned m_start_offset; // Add this to m_Start to get the actual ray start
-	VectorAligned m_extents; // Describes an axis aligned box extruded along a ray
+	vec3_t_aligned m_start; // starting point, centered within the extents
+	vec3_t_aligned m_delta; // direction + length of the ray
+	vec3_t_aligned m_start_offset; // Add this to m_Start to get the actual ray start
+	vec3_t_aligned m_extents; // Describes an axis aligned box extruded along a ray
 	const matrix_t* m_world_axis_transform;
-	//const matrix_t *m_pWorldAxisTransform;
 	bool m_is_ray; // are the extents zero?
 	bool m_is_swept; // is delta != 0?
 
@@ -174,9 +175,9 @@ struct csurface_t {
 struct cplane_t {
 	vec3_t normal;
 	float m_dist;
-	BYTE m_type;
-	BYTE m_sign_bits;
-	BYTE m_pad[2];
+	std::byte m_type;
+	std::byte m_sign_bits;
+	std::byte m_pad[2];
 };
 
 struct trace_t {

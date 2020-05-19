@@ -54,7 +54,6 @@ public:
 	void		set_up(const vec3_t& vUp);
 	void		set_forward(const vec3_t& vForward);
 
-	void		get_basis_vector_3d(vec3_t& vForward, vec3_t& vLeft, vec3_t& vUp) const;
 	void		set_basis_vector_3d(const vec3_t& vForward, const vec3_t& vLeft, const vec3_t& vUp);
 
 	// Get/set the translation.

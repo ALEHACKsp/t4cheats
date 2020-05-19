@@ -1,56 +1,58 @@
 #include "../features.hpp"
 
 RECT get_bounds(entity_t* entity) {
-	RECT rect{};
-	auto collideable = entity->collideable();
-
+	const auto collideable = entity->collideable();
 	if (!collideable)
-		return rect;
+		return { };
 
-	auto min = collideable->mins();
-	auto max = collideable->maxs();
-
-	matrix_t& trans = entity->coordinateframe();
+	const vec3_t min = collideable->mins();
+	const vec3_t max = collideable->maxs();
 
 	vec3_t points[] = {
-		vec3_t(min.x, min.y, min.z),
-		vec3_t(min.x, max.y, min.z),
-		vec3_t(max.x, max.y, min.z),
-		vec3_t(max.x, min.y, min.z),
-		vec3_t(max.x, max.y, max.z),
-		vec3_t(min.x, max.y, max.z),
-		vec3_t(min.x, min.y, max.z),
-		vec3_t(max.x, min.y, max.z)
+		{ min.x, min.y, min.z },
+		{ min.x, max.y, min.z },
+		{ max.x, max.y, min.z },
+		{ max.x, min.y, min.z },
+		{ max.x, max.y, max.z },
+		{ min.x, max.y, max.z },
+		{ min.x, min.y, max.z },
+		{ max.x, min.y, max.z }
 	};
 
-	vec3_t pointsTransformed[8];
-	for (int i = 0; i < 8; i++) {
-		math::transform_vector(points[i], trans, pointsTransformed[i]);
+	vec3_t points_transformed[8];
+	vec3_t screen_points[8];
+
+	matrix_t coordinate_frame = entity->coordinateframe();
+
+	for (int i = 0; i < 8; ++i)
+		math::transform_vector(points[i], coordinate_frame, points_transformed[i]);
+
+	for (int i = 0; i < 8; ++i) {
+		if (!math::world_to_screen(points_transformed[i], screen_points[i]))
+			return { };
 	}
 
-	vec3_t screen_points[8] = {};
+	float left = screen_points[0].x;
+	float top = screen_points[0].y;
+	float right = screen_points[0].x;
+	float bottom = screen_points[0].y;
 
-	for (int i = 0; i < 8; i++) {
-		if (!math::world_to_screen(pointsTransformed[i], screen_points[i]))
-			return rect;
-	}
-
-	auto left = screen_points[0].x;
-	auto top = screen_points[0].y;
-	auto right = screen_points[0].x;
-	auto bottom = screen_points[0].y;
-
-	for (int i = 1; i < 8; i++) {
+	for (int i = 1; i < 8; ++i) {
 		if (left > screen_points[i].x)
 			left = screen_points[i].x;
+
 		if (top < screen_points[i].y)
 			top = screen_points[i].y;
+
 		if (right < screen_points[i].x)
 			right = screen_points[i].x;
+
 		if (bottom > screen_points[i].y)
 			bottom = screen_points[i].y;
 	}
-	return RECT{ (long)left, (long)bottom, (long)right, (long)top };
+
+	// to-do: make our own class so we can stop casting these to long
+	return { static_cast<LONG>(left), static_cast<LONG>(bottom), static_cast<LONG>(right), static_cast<LONG>(top) };
 }
 
 color get_color_from_health(int health, int alpha = 255)

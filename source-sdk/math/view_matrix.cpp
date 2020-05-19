@@ -89,15 +89,15 @@ void vector_3d_multiply_position(const view_matrix_t& src1, const vec3_t& src2, 
 //-----------------------------------------------------------------------------
 
 vec3_t view_matrix_t::get_forward() const {
-	return vec3_t(m[0][0], m[1][0], m[2][0]);
+	return { m[0][0], m[1][0], m[2][0] };
 }
 
 vec3_t view_matrix_t::get_left() const {
-	return vec3_t(m[0][1], m[1][1], m[2][1]);
+	return { m[0][1], m[1][1], m[2][1] };
 }
 
 vec3_t view_matrix_t::get_up() const {
-	return vec3_t(m[0][2], m[1][2], m[2][2]);
+	return { m[0][2], m[1][2], m[2][2] };
 }
 
 void view_matrix_t::set_forward(const vec3_t& vForward) {
@@ -118,12 +118,6 @@ void view_matrix_t::set_up(const vec3_t& vUp) {
 	m[2][2] = vUp.z;
 }
 
-void view_matrix_t::get_basis_vector_3d(vec3_t& vForward, vec3_t& vLeft, vec3_t& vUp) const {
-	vForward.init(m[0][0], m[1][0], m[2][0]);
-	vLeft.init(m[0][1], m[1][1], m[2][1]);
-	vUp.init(m[0][2], m[1][2], m[2][2]);
-}
-
 void view_matrix_t::set_basis_vector_3d(const vec3_t& vForward, const vec3_t& vLeft, const vec3_t& vUp) {
 	set_forward(vForward);
 	set_left(vLeft);
@@ -135,7 +129,7 @@ void view_matrix_t::set_basis_vector_3d(const vec3_t& vForward, const vec3_t& vL
 //-----------------------------------------------------------------------------
 
 vec3_t view_matrix_t::get_translation() const {
-	return vec3_t(m[0][3], m[1][3], m[2][3]);
+	return { m[0][3], m[1][3], m[2][3] };
 }
 
 vec3_t& view_matrix_t::get_translation(vec3_t& vTrans) const {
@@ -265,27 +259,27 @@ vec3_t view_matrix_t::vector_3d_transpose(const vec3_t& vVec) const {
 	tmp.y -= m[1][3];
 	tmp.z -= m[2][3];
 
-	return vec3_t(
+	return {
 		m[0][0] * tmp.x + m[1][0] * tmp.y + m[2][0] * tmp.z,
 		m[0][1] * tmp.x + m[1][1] * tmp.y + m[2][1] * tmp.z,
 		m[0][2] * tmp.x + m[1][2] * tmp.y + m[2][2] * tmp.z
-	);
+	};
 }
 
 vec3_t view_matrix_t::vector_3d_multiply_upper(const vec3_t & vVec) const {
-	return vec3_t(
+	return {
 		m[0][0] * vVec.x + m[0][1] * vVec.y + m[0][2] * vVec.z,
 		m[1][0] * vVec.x + m[1][1] * vVec.y + m[1][2] * vVec.z,
 		m[2][0] * vVec.x + m[2][1] * vVec.y + m[2][2] * vVec.z
-	);
+	};
 }
 
 vec3_t view_matrix_t::vector_3d_transpose_rotation(const vec3_t & vVec) const {
-	return vec3_t(
+	return {
 		m[0][0] * vVec.x + m[1][0] * vVec.y + m[2][0] * vVec.z,
 		m[0][1] * vVec.x + m[1][1] * vVec.y + m[2][1] * vVec.z,
 		m[0][2] * vVec.x + m[1][2] * vVec.y + m[2][2] * vVec.z
-	);
+	};
 }
 
 void view_matrix_t::vector_3d_multiply(const vec3_t & vIn, vec3_t & vOut) const {

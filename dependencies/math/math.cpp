@@ -44,18 +44,18 @@ vec3_t math::calculate_angle(vec3_t& a, vec3_t& b) {
 }
 
 void math::sin_cos(float r, float* s, float* c) {
-	*s = sin(r);
-	*c = cos(r);
+	*s = std::sin(r);
+	*c = std::cos(r);
 }
 
 vec3_t math::angle_vector(vec3_t angle) {
-	auto sy = sin(angle.y / 180.f * static_cast<float>(M_PI));
-	auto cy = cos(angle.y / 180.f * static_cast<float>(M_PI));
+	auto sy = std::sin(angle.y / 180.f * static_cast<float>(M_PI));
+	auto cy = std::cos(angle.y / 180.f * static_cast<float>(M_PI));
 
-	auto sp = sin(angle.x / 180.f * static_cast<float>(M_PI));
-	auto cp = cos(angle.x / 180.f * static_cast<float>(M_PI));
+	auto sp = std::sin(angle.x / 180.f * static_cast<float>(M_PI));
+	auto cp = std::cos(angle.x / 180.f * static_cast<float>(M_PI));
 
-	return vec3_t(cp * cy, cp * sy, -sp);
+	return { cp * cy, cp * sy, -sp };
 }
 
 void math::transform_vector(vec3_t & a, matrix_t & b, vec3_t & out) {
@@ -108,30 +108,6 @@ void math::angle_vectors(vec3_t & angles, vec3_t * forward, vec3_t * right, vec3
 		up->y = cr * sp * sy + -sr * cy;
 		up->z = cr * cp;
 	}
-}
-
-vec3_t math::vector_add(vec3_t & a, vec3_t & b) {
-	return vec3_t(a.x + b.x,
-		a.y + b.y,
-		a.z + b.z);
-}
-
-vec3_t math::vector_subtract(vec3_t & a, vec3_t & b) {
-	return vec3_t(a.x - b.x,
-		a.y - b.y,
-		a.z - b.z);
-}
-
-vec3_t math::vector_multiply(vec3_t & a, vec3_t & b) {
-	return vec3_t(a.x * b.x,
-		a.y * b.y,
-		a.z * b.z);
-}
-
-vec3_t math::vector_divide(vec3_t & a, vec3_t & b) {
-	return vec3_t(a.x / b.x,
-		a.y / b.y,
-		a.z / b.z);
 }
 
 bool math::screen_transform(const vec3_t & point, vec3_t & screen) {

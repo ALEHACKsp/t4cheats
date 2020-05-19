@@ -91,8 +91,8 @@ void render::draw_circle_3d(std::int32_t x, std::int32_t y, std::int32_t z, std:
 	float step = M_PI * 2.0 / s;
 	for (float a = 0; a < (M_PI * 2.0); a += step) {
 		int deg = a * (180 / M_PI);
-		vec3_t v_start = vec3_t(r * cosf(a) + x, r * sinf(a) + y,  z);
-		vec3_t v_end = vec3_t(r * cosf(a + step) + x, r * sinf(a + step) + y, z);
+		vec3_t v_start{ r * cosf(a) + x, r * sinf(a) + y, z };
+		vec3_t v_end{ r * cosf(a + step) + x, r * sinf(a + step) + y, z };
 		vec3_t w2s_start, w2s_end;
 		if (math::world_to_screen(v_start, w2s_start) && math::world_to_screen(v_end, w2s_end)) {
 			if (rainbow) {

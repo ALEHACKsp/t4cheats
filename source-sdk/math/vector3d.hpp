@@ -1,4 +1,6 @@
 #pragma once
+
+#include <cmath>
 #include <limits>
 #include <algorithm>
 
@@ -29,38 +31,25 @@ const float FLOAT32_NAN = bits_to_float(FLOAT32_NAN_BITS);
 
 class vec3_t {
 public:
-	vec3_t();
-	vec3_t(float, float, float);
-	~vec3_t();
-
-	float x, y, z;
-
 	vec3_t& operator+=(const vec3_t& v) {
-		x += v.x; y += v.y; z += v.z; return *this;
+		x += v.x;
+		y += v.y;
+		z += v.z;
+		return *this;
 	}
 
 	vec3_t& operator-=(const vec3_t& v) {
-		x -= v.x; y -= v.y; z -= v.z; return *this;
+		x -= v.x;
+		y -= v.y;
+		z -= v.z;
+		return *this;
 	}
 
 	vec3_t& operator*=(float v) {
-		x *= v; y *= v; z *= v; return *this;
-	}
-
-	vec3_t operator+(const vec3_t& v) const {
-		return vec3_t{ x + v.x, y + v.y, z + v.z };
-	}
-
-	vec3_t operator-(const vec3_t& v) const {
-		return vec3_t{ x - v.x, y - v.y, z - v.z };
-	}
-
-	vec3_t operator*(float fl) const {
-		return vec3_t(x * fl, y * fl, z * fl);
-	}
-
-	vec3_t operator*(const vec3_t& v) const {
-		return vec3_t(x * v.x, y * v.y, z * v.z);
+		x *= v;
+		y *= v;
+		z *= v;
+		return *this;
 	}
 
 	vec3_t& operator/=(float fl) {
@@ -70,52 +59,87 @@ public:
 		return *this;
 	}
 
-	auto operator/(float other) const {
-		vec3_t vec;
-		vec.x = x / other;
-		vec.y = y / other;
-		vec.z = z / other;
-		return vec;
+	vec3_t operator+(const vec3_t& v) const {
+		return { x + v.x, y + v.y, z + v.z };
+	}
+
+	vec3_t operator-(const vec3_t& v) const {
+		return { x - v.x, y - v.y, z - v.z };
+	}
+
+	vec3_t operator*(const vec3_t& v) const {
+		return { x * v.x, y * v.y, z * v.z };
+	}
+
+	vec3_t operator*(float fl) const {
+		return { x * fl, y * fl, z * fl };
+	}
+
+	vec3_t operator/(float fl) const {
+		return { x / fl, y / fl, z / fl };
 	}
 
 	float& operator[](int i) {
 		return ((float*)this)[i];
 	}
+
 	float operator[](int i) const {
 		return ((float*)this)[i];
 	}
 
-	inline float Length2D() const {
-		return sqrt((x * x) + (y * y));
+	vec3_t& clamp() {
+		if (x < -89.f)
+			x = -89.f;
+		if (x > 89.f)
+			x = 89.f;
+
+		if (y < -180.f)
+			y += 360.f;
+		if (y > 180.f)
+			y -= 360.f;
+
+		z = 0.f;
+
+		return *this;
 	}
 
-	void crossproduct(vec3_t v1, vec3_t v2, vec3_t cross_p) const {
-		cross_p.x = (v1.y * v2.z) - (v1.z * v2.y); //i
-		cross_p.y = -((v1.x * v2.z) - (v1.z * v2.x)); //j
-		cross_p.z = (v1.x * v2.y) - (v1.y * v2.x); //k
+	vec3_t& normalize() {
+		x = std::isfinite(x) ? std::remainderf(x, 360.f) : 0.f;
+		y = std::isfinite(y) ? std::remainderf(y, 360.f) : 0.f;
+		z = 0.f;
+
+		return *this;
 	}
 
-	vec3_t cross(const vec3_t & vOther) const {
-		vec3_t res;
-		crossproduct(*this, vOther, res);
-		return res;
+	float length() const {
+		return std::sqrt(x * x + y * y + z * z);
 	}
 
-	void init(float ix, float iy, float iz);
-	void clamp();
-	vec3_t clamped();
-	vec3_t normalized();
-	float distance_to(const vec3_t & other);
-	void normalize();
-	float length();
-	float length_sqr();
-	float length_2d_sqr(void) const;
-	float dot(const vec3_t other);
-	float dot(const float* other);
+	float length_sqr() const {
+		return x * x + y * y + z * z;
+	}
+
+	float length_2d() const {
+		return std::sqrt(x * x + y * y);
+	}
+
+	float length_2d_sqr() const {
+		return x * x + y * y;
+	}
+
+	float dot(const vec3_t& v) const {
+		return x * v.x + y * v.y + z * v.z;
+	}
+
+	float dot(const float* fl) const {
+		return x * fl[0] + y * fl[1] + z * fl[2];
+	}
+
+	float x, y, z;
 };
 
 inline vec3_t operator*(float lhs, const vec3_t & rhs) {
-	return vec3_t(rhs.x * lhs, rhs.x * lhs, rhs.x * lhs);
+	return { rhs.x * lhs, rhs.x * lhs, rhs.x * lhs };
 }
 
 struct matrix_t {

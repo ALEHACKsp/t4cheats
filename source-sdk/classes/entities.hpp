@@ -466,19 +466,16 @@ public:
 		return *reinterpret_cast<anim_state * *>(this + 0x3900);
 	}
 
-	bool can_see_player_pos(player_t * player, const vec3_t & pos) {
+	bool can_see_player_pos(player_t* player, const vec3_t& pos) {
 		trace_t tr;
 		ray_t ray;
 		trace_filter filter;
 		filter.skip = this;
 
-		auto start = get_eye_pos();
-		auto dir = (pos - start).normalized();
-
-		ray.initialize(start, pos);
+		ray.initialize(get_eye_pos(), pos);
 		interfaces::trace_ray->trace_ray(ray, MASK_SHOT | CONTENTS_GRATE, &filter, &tr);
 
-		return tr.entity == player || tr.flFraction > 0.97f;
+		return tr.entity == player || tr.flFraction > .97f;
 	}
 
 	void invalidate_bone_cache() {
@@ -487,57 +484,30 @@ public:
 	}
 
 	vec3_t get_bone_position(int bone) {
-		matrix_t bone_matrices[128];
-		if (setup_bones(bone_matrices, 128, 256, 0.0f))
-			return vec3_t{ bone_matrices[bone][0][3], bone_matrices[bone][1][3], bone_matrices[bone][2][3] };
-		else
-			return vec3_t{ };
-	}
+		if (matrix_t matrix[MAXSTUDIOBONES]; setup_bones(matrix, 128, 256, 0.f))
+			return { matrix[bone][0][3], matrix[bone][1][3], matrix[bone][2][3] };
 
-	vec3_t get_hitbox_position_and_radius(int hitbox_id, float* radius) {
-		matrix_t bone_matrix[MAXSTUDIOBONES];
-
-		if (setup_bones(bone_matrix, MAXSTUDIOBONES, BONE_USED_BY_HITBOX, 0.0f)) {
-			auto studio_model = interfaces::model_info->get_studio_model(model());
-
-			if (studio_model) {
-				auto hitbox = studio_model->hitbox_set(0)->hitbox(hitbox_id);
-
-				if (hitbox) {
-					auto min = vec3_t{}, max = vec3_t{};
-
-					math::transform_vector(hitbox->mins, bone_matrix[hitbox->bone], min);
-					math::transform_vector(hitbox->maxs, bone_matrix[hitbox->bone], max);
-
-					*radius = hitbox->radius;
-
-					return vec3_t((min.x + max.x) * 0.5f, (min.y + max.y) * 0.5f, (min.z + max.z) * 0.5f);
-				}
-			}
-		}
-		return vec3_t{};
+		return { };
 	}
 
 	vec3_t get_hitbox_position(int hitbox_id) {
-		matrix_t bone_matrix[MAXSTUDIOBONES];
+		if (const auto studio_model = interfaces::model_info->get_studio_model(model())) {
+			if (const auto hitbox = studio_model->hitbox_set(0)->hitbox(hitbox_id)) {
+				matrix_t bone_matrix[MAXSTUDIOBONES];
 
-		if (setup_bones(bone_matrix, MAXSTUDIOBONES, BONE_USED_BY_HITBOX, 0.0f)) {
-			auto studio_model = interfaces::model_info->get_studio_model(model());
+				if (!setup_bones(bone_matrix, MAXSTUDIOBONES, BONE_USED_BY_HITBOX, 0.f))
+					return { };
 
-			if (studio_model) {
-				auto hitbox = studio_model->hitbox_set(0)->hitbox(hitbox_id);
+				vec3_t min, max;
 
-				if (hitbox) {
-					auto min = vec3_t{}, max = vec3_t{};
+				math::transform_vector(hitbox->mins, bone_matrix[hitbox->bone], min);
+				math::transform_vector(hitbox->maxs, bone_matrix[hitbox->bone], max);
 
-					math::transform_vector(hitbox->mins, bone_matrix[hitbox->bone], min);
-					math::transform_vector(hitbox->maxs, bone_matrix[hitbox->bone], max);
-
-					return vec3_t((min.x + max.x) * 0.5f, (min.y + max.y) * 0.5f, (min.z + max.z) * 0.5f);
-				}
+				return (min + max) * .5f;
 			}
 		}
-		return vec3_t{};
+
+		return { };
 	}
 
 	bool is_alive() {
