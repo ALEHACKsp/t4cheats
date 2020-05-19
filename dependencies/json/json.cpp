@@ -4216,7 +4216,6 @@ namespace Json {
 #define isfinite _finite
 #endif
 
-#define _CRT_SECURE_CPP_OVERLOAD_STANDARD_NAMES 1
 #if !defined(snprintf)
 #define snprintf _snprintf
 #endif

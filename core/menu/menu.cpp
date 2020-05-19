@@ -11,16 +11,12 @@ constexpr std::array captions{
 	"dominating legits since 1000 BC"
 };
 
+static std::string caption;
 static ImFont* font;
 
-void menu::init(HWND wnd) {
-	ImGui::CreateContext();
-
+void menu::init() {
 	const ImGuiIO& io = ImGui::GetIO();
 	font = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\Tahoma.ttf", 12.0f, NULL, io.Fonts->GetGlyphRangesDefault());
-
-	ImGui_ImplWin32_Init(wnd);
-	ImGui_ImplDX9_Init(csgo::device);
 
 	ImGui::StyleColorsDarker();
 
@@ -35,7 +31,7 @@ void menu::init(HWND wnd) {
 	style.WindowPadding = ImVec2(0.f, 8.f);
 	style.WindowMinSize = ImVec2(400.f, 300.f);
 
-	menu::caption = captions[rand() % 8];
+	caption = captions[rand() % 8];
 }
 
 void aimbot_window() {
@@ -136,7 +132,7 @@ void config_window() {
 	ImGui::SameLine();
 
 	if (ImGui::Button("Create")) {
-		config::save(configs[current_config]);
+		config::save(buffer);
 		reload_configs();
 	}
 
@@ -173,34 +169,42 @@ void config_window() {
 }
 
 void menu::render() {
-	if (font)
-		ImGui::PushFont(font);
-	if (variables::menu::opened) {
-		std::string text = "t4cheats - " + caption;
+	if (!variables::menu::opened)
+		return;
+
+	const std::string title = "t4cheats - " + caption;
+
+	ImGui::PushFont(font);
+	ImGui::Begin(title.c_str(), nullptr, ImGuiWindowFlags_NoCollapse); {
+		ImGui::Columns(2, nullptr, false);
+		ImGui::SetColumnWidth(0, 65.f);
+
 		static int tab = 0;
-		ImGui::Begin(text.c_str(), nullptr, ImGuiWindowFlags_NoCollapse); {
-			ImGui::Columns(2, 0, false);
-			ImGui::SetColumnWidth(0, 65);
-			if (ImGui::Button("Aimbot", ImVec2(50, 25)))  tab = 0;
-			if (ImGui::Button("Visuals", ImVec2(50, 25))) tab = 1;
-			if (ImGui::Button("Misc", ImVec2(50, 25)))    tab = 2;
-			if (ImGui::Button("Config", ImVec2(50, 25)))  tab = 3;
-			ImGui::NextColumn();
-			switch (tab) {
-				case 0: aimbot_window(); break;
-				case 1: visuals_window(); break;
-				case 2: misc_window(); break;
-				case 3: config_window(); break;
-				default: break;
-			}
+
+		if (ImGui::Button("Aimbot", { 50.f, 25.f }))
+			tab = 0;
+		else if (ImGui::Button("Visuals", { 50.f, 25.f }))
+			tab = 1;
+		else if (ImGui::Button("Misc", { 50.f, 25.f }))
+			tab = 2;
+		else if (ImGui::Button("Config", { 50.f, 25.f }))
+			tab = 3;
+
+		ImGui::NextColumn();
+
+		switch (tab) {
+		case 0: aimbot_window(); break;
+		case 1: visuals_window(); break;
+		case 2: misc_window(); break;
+		case 3: config_window(); break;
+		default: break;
 		}
-		ImGui::End();
 	}
-	if (font)
-		ImGui::PopFont();
+
+	ImGui::PopFont();
+	ImGui::End();
 }
 
-void menu::toggle() {
-	if (GetAsyncKeyState(VK_INSERT) & 1) //switch opened state when menu key 'INSERT' is pressed
-		variables::menu::opened = !variables::menu::opened;
+std::string menu::get_caption() {
+	return caption;
 }
