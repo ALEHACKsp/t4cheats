@@ -1,8 +1,6 @@
 #include "menu.hpp"
 
-namespace fs = std::filesystem;
-
-std::string captions[] = {
+constexpr std::array captions{
 	"we are back",
 	"hL can't believe it",
 	"maybe without crashes now?",
@@ -13,25 +11,29 @@ std::string captions[] = {
 	"dominating legits since 1000 BC"
 };
 
-ImFont* font;
+static ImFont* font;
 
 void menu::init(HWND wnd) {
 	ImGui::CreateContext();
-	ImGuiIO& io = ImGui::GetIO();
+
+	const ImGuiIO& io = ImGui::GetIO();
 	font = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\Tahoma.ttf", 12.0f, NULL, io.Fonts->GetGlyphRangesDefault());
+
 	ImGui_ImplWin32_Init(wnd);
 	ImGui_ImplDX9_Init(csgo::device);
-	ImGui::StyleColorsDarker();
-	ImGui::GetStyle().WindowRounding = 0.0f;
-	ImGui::GetStyle().ChildRounding = 0.0f;
-	ImGui::GetStyle().FrameRounding = 0.0f;
-	ImGui::GetStyle().GrabRounding = 0.0f;
-	ImGui::GetStyle().PopupRounding = 0.0f;
-	ImGui::GetStyle().ScrollbarRounding = 0.0f;
-	ImGui::GetStyle().ScrollbarSize = 8.f;
-	ImGui::GetStyle().WindowPadding = ImVec2(0, 8);
 
-	ImGui::GetStyle().WindowMinSize = ImVec2(400, 300);
+	ImGui::StyleColorsDarker();
+
+	ImGuiStyle& style = ImGui::GetStyle();
+	style.WindowRounding = 0.f;
+	style.ChildRounding = 0.f;
+	style.FrameRounding = 0.f;
+	style.GrabRounding = 0.f;
+	style.PopupRounding = 0.f;
+	style.ScrollbarRounding = 0.f;
+	style.ScrollbarSize = 8.f;
+	style.WindowPadding = ImVec2(0.f, 8.f);
+	style.WindowMinSize = ImVec2(400.f, 300.f);
 
 	menu::caption = captions[rand() % 8];
 }
@@ -97,58 +99,76 @@ void misc_window() {
 }
 
 void config_window() {
-	static auto is_configs_loaded = false;
-	ImGui::BeginChild("Config Child"); {
-		static std::vector<std::string> configs;
-		static auto load_configs = []() {
-			std::vector<std::string> items = {};
-			std::string path("C:/t4cheats");
-			if (!fs::is_directory(path))
-				fs::create_directories(path);
-			for (auto& p : fs::directory_iterator(path))
-				items.push_back(p.path().string().substr(path.length() + 1));
+	ImGui::BeginChild("Config Child");
 
-			return items;
-		};
-		static auto is_configs_loaded = false;
-		if (!is_configs_loaded) {
-			is_configs_loaded = true;
-			configs = load_configs();
+	const std::filesystem::path path = "C:/t4cheats";
+
+	static int current_config = -1;
+	static std::vector<std::string> configs;
+
+	auto reload_configs = [&]() {
+		configs.clear();
+
+		std::error_code ec;
+
+		if (!std::filesystem::is_directory(path, ec)) {
+			std::filesystem::remove(path, ec);
+			std::filesystem::create_directory(path, ec);
 		}
-		static std::string current_config;
-		static char config_name[32];
-		ImGui::InputText("##config_name", config_name, sizeof(config_name));
-		ImGui::SameLine();
-		if (ImGui::Button("Create")) {
-			current_config = std::string(config_name);
-			config::save(current_config);
-			is_configs_loaded = false;
-			memset(config_name, 0, 32);
-		}
-		ImGui::ListBoxHeader("##configs"); {
-			for (auto& config : configs) {
-				if (ImGui::Selectable(config.c_str(), config == current_config)) {
-					current_config = config;
-				}
-			}
-		}
-		ImGui::ListBoxFooter();
-		if (!current_config.empty()) {
-			if (ImGui::Button("Load"))
-				config::load(current_config);
-			ImGui::SameLine();
-			if (ImGui::Button("Save"))
-				config::save(current_config);
-			ImGui::SameLine();
-			if (ImGui::Button("Delete") && fs::remove("C:/t4cheats/" + current_config)) {
-				current_config.clear();
-				is_configs_loaded = false;
-			}
-			ImGui::SameLine();
-		}
-		if (ImGui::Button("Refresh"))
-			is_configs_loaded = false;
+
+		std::transform(std::filesystem::directory_iterator{ path, ec },
+					   std::filesystem::directory_iterator{ },
+					   std::back_inserter(configs),
+					   [](const auto& entry) { return std::string{ (const char*)entry.path().filename().u8string().c_str() }; });
+	};
+
+	static const auto once = [&]() {
+		reload_configs();
+		return true;
+	}();
+
+	if (std::size_t(current_config) >= configs.size())
+		current_config = -1;
+
+	static std::string buffer;
+
+	ImGui::InputText("##config_name", &buffer, ImGuiInputTextFlags_EnterReturnsTrue);
+	ImGui::SameLine();
+
+	if (ImGui::Button("Create")) {
+		config::save(configs[current_config]);
+		reload_configs();
 	}
+
+	if (ImGui::ListBox("", &current_config, [](void* data, int idx, const char** out_text) {
+		auto& vector = *static_cast<std::vector<std::string>*>(data);
+		*out_text = vector[idx].c_str();
+		return true;
+	}, &configs, configs.size(), 5) && current_config != -1)
+		buffer = configs[current_config];
+
+	if (const std::string config = configs[current_config]; !config.empty()) {
+		if (ImGui::Button("Load"))
+			config::load(config);
+
+		ImGui::SameLine();
+
+		if (ImGui::Button("Save"))
+			config::save(config);
+
+		ImGui::SameLine();
+
+		if (ImGui::Button("Delete")) {
+			std::filesystem::remove(path / config);
+			reload_configs();
+		}
+
+		ImGui::SameLine();
+	}
+
+	if (ImGui::Button("Refresh"))
+		reload_configs();
+
 	ImGui::EndChild();
 }
 

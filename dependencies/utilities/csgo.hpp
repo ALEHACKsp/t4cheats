@@ -26,6 +26,7 @@
 #include "../../core/menu/imgui/imgui.h"
 #include "../../core/menu/imgui/imgui_impl_dx9.h"
 #include "../../core/menu/imgui/imgui_impl_win32.h"
+#include "../../core/menu/imgui/imgui_stdlib.h"
 #include "../utilities/csgo.hpp"
 
 //interfaces
