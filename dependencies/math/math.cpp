@@ -59,9 +59,9 @@ vec3_t math::angle_vector(vec3_t angle) {
 }
 
 void math::transform_vector(vec3_t & a, matrix_t & b, vec3_t & out) {
-	out.x = a.dot(b.mat_val[0]) + b.mat_val[0][3];
-	out.y = a.dot(b.mat_val[1]) + b.mat_val[1][3];
-	out.z = a.dot(b.mat_val[2]) + b.mat_val[2][3];
+	out.x = a.dot(b[0]) + b[0][3];
+	out.y = a.dot(b[1]) + b[1][3];
+	out.z = a.dot(b[2]) + b[2][3];
 }
 
 void math::vector_angles(vec3_t & forward, vec3_t & angles) {

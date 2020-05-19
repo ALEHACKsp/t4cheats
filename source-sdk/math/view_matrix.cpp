@@ -16,10 +16,6 @@ view_matrix_t::view_matrix_t(
 	);
 }
 
-view_matrix_t::view_matrix_t(const matrix_t& matrix3x4) {
-	init(matrix3x4);
-}
-
 //-----------------------------------------------------------------------------
 // Creates a matrix where the X axis = forward
 // the Y axis = left, and the Z axis = up
@@ -58,18 +54,6 @@ void view_matrix_t::init(
 	m[3][1] = m31;
 	m[3][2] = m32;
 	m[3][3] = m33;
-}
-
-//-----------------------------------------------------------------------------
-// Initialize from a 3x4
-//-----------------------------------------------------------------------------
-void view_matrix_t::init(const matrix_t& matrix3x4) {
-	memcpy(m, matrix3x4.base(), sizeof(matrix_t));
-
-	m[3][0] = 0.0f;
-	m[3][1] = 0.0f;
-	m[3][2] = 0.0f;
-	m[3][3] = 1.0f;
 }
 
 //-----------------------------------------------------------------------------
@@ -171,16 +155,6 @@ const matrix_t& view_matrix_t::as_matrix() const {
 
 matrix_t& view_matrix_t::as_matrix() {
 	return *((matrix_t*)this);
-}
-
-void view_matrix_t::copy_from_matrix(const matrix_t& m3x4) {
-	memcpy(m, m3x4.base(), sizeof(matrix_t));
-	m[3][0] = m[3][1] = m[3][2] = 0;
-	m[3][3] = 1;
-}
-
-void view_matrix_t::set_matrix(matrix_t& matrix3x4) const {
-	memcpy(matrix3x4.base(), m, sizeof(matrix_t));
 }
 
 //-----------------------------------------------------------------------------
