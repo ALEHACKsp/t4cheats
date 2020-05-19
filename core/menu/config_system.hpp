@@ -5,6 +5,6 @@
 
 namespace config {
 	void initialize();
-	void load(const std::string name);
-	void save(const std::string name);
+	void load(const std::string& name);
+	void save(const std::string& name);
 }

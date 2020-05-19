@@ -56,6 +56,9 @@ bool hooks::initialize() {
 }
 
 void hooks::release() {
+	interfaces::panel->set_mouse_input_enabled(true);
+	interfaces::input->m_fCameraInThirdPerson = false;
+
 	MH_Uninitialize();
 	MH_DisableHook(MH_ALL_HOOKS);
 
