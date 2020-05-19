@@ -3,9 +3,6 @@
 #include "menu/config_system.hpp"
 
 unsigned long WINAPI initialize(void* instance) {
-	while (!GetModuleHandleA("serverbrowser.dll"))
-		Sleep(200);
-
 #ifdef _DEBUG
 	console::initialize("console");
 #endif
@@ -16,9 +13,8 @@ unsigned long WINAPI initialize(void* instance) {
 		hooks::initialize();
 		config::initialize();
 	}
-
 	catch (const std::runtime_error & error) {
-		MessageBoxA(NULL, error.what(), "woops, there was an error!", MB_OK | MB_ICONERROR);
+		MessageBoxA(NULL, error.what(), "whoops, there was an error!", MB_OK | MB_ICONERROR);
 		FreeLibraryAndExitThread(static_cast<HMODULE>(instance), 0);
 	}
 
@@ -38,18 +34,15 @@ unsigned long WINAPI release() {
 	return TRUE;
 }
 
-std::int32_t WINAPI DllMain(const HMODULE instance [[maybe_unused]], const unsigned long reason, const void* reserved [[maybe_unused]] ) {
-	DisableThreadLibraryCalls(instance);
-
+BOOL APIENTRY DllMain(HMODULE module, DWORD reason, LPVOID reserved) {
 	switch (reason) {
 	case DLL_PROCESS_ATTACH: {
-			if (auto handle = CreateThread(nullptr, NULL, initialize, instance, NULL, nullptr))
-				CloseHandle(handle);
+		    CreateThread(nullptr, NULL, LPTHREAD_START_ROUTINE(initialize), module, NULL, nullptr);
 		} break;
 	case DLL_PROCESS_DETACH: {
 			release();
 		} break;
 	}
 
-	return true;
+	return TRUE;
 }

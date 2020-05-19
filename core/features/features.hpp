@@ -19,7 +19,7 @@ namespace aimbot {
 
 namespace visuals {
 	namespace chams {
-		void render(void* ctx, void* state, const model_render_info_t& info, matrix_t* matrix);
+		bool render(void* ecx, void* ctx, void* state, const model_render_info_t& info, matrix_t* matrix);
 	};
 
 	namespace esp {

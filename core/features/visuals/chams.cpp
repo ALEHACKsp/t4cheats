@@ -3,7 +3,7 @@
 
 extern hooks::draw_model_execute::fn dme_original;
 
-i_material* material = nullptr;
+static i_material* material = nullptr;
 
 void override_material(bool ignorez, bool flat, const color& color) {
 	//finding materials
@@ -19,27 +19,35 @@ void override_material(bool ignorez, bool flat, const color& color) {
 	interfaces::model_render->override_material(material); //override material of the model
 }
 
-void visuals::chams::render(void* ctx, void* state, const model_render_info_t& info, matrix_t* matrix) {
+bool visuals::chams::render(void* ecx, void* ctx, void* state, const model_render_info_t& info, matrix_t* matrix) {
+	bool should_redraw = true;
+
+	if (!variables::visuals::chams_enable)
+		return should_redraw;
+
+	if (const std::string_view model_name = info.model->name; !model_name._Starts_with("models/player"))
+		return should_redraw;
+
 	const auto player = reinterpret_cast<player_t*>(interfaces::entity_list->get_client_entity(info.entity_index));
 	if (!player || !player->is_alive() || player->dormant() || player == csgo::local_player) //dont override localplayer for now
-		return;
+		return should_redraw;
 
-	if (variables::visuals::chams_enable) {
-		if (player->is_enemy(csgo::local_player)) {
-			if (variables::visuals::chams_through_walls) { //do we want to see people through walls?
-				override_material(true, true, variables::visuals::chams_colors::enemies_invisible); //override ignorez material
-				dme_original(ctx, state, info, matrix); //render first layer
-			}
-			override_material(false, false, variables::visuals::chams_colors::enemies_visible); //override regular material
-			dme_original(ctx, state, info, matrix); //render second layer
+	if (player->is_enemy(csgo::local_player)) {
+		if (variables::visuals::chams_through_walls) { //do we want to see people through walls?
+			override_material(true, true, variables::visuals::chams_colors::enemies_invisible); //override ignorez material
+			dme_original(ecx, ctx, state, info, matrix); //render first layer
 		}
-		else {
-			if (variables::visuals::chams_through_walls) { //do we want to see people through walls?
-				override_material(true, true, variables::visuals::chams_colors::team_invisible); //override ignorez material
-				dme_original(ctx, state, info, matrix); //render first layer
-			}
-			override_material(false, false, variables::visuals::chams_colors::team_visible); //override regular material
-			dme_original(ctx, state, info, matrix); //render second layer
-		}
+		override_material(false, false, variables::visuals::chams_colors::enemies_visible); //override regular material
+		dme_original(ecx, ctx, state, info, matrix); //render second layer
+		should_redraw = false;
 	}
+	else {
+		if (variables::visuals::chams_through_walls) { //do we want to see people through walls?
+			override_material(true, true, variables::visuals::chams_colors::team_invisible); //override ignorez material
+			dme_original(ecx, ctx, state, info, matrix); //render first layer
+		}
+		override_material(false, false, variables::visuals::chams_colors::team_visible); //override regular material
+	}
+
+	return should_redraw;
 }

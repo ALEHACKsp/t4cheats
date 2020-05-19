@@ -31,7 +31,7 @@ void menu::init() {
 	style.WindowPadding = ImVec2(0.f, 8.f);
 	style.WindowMinSize = ImVec2(400.f, 300.f);
 
-	caption = captions[rand() % 8];
+	caption = captions[rand() % captions.size()];
 }
 
 void aimbot_window() {
@@ -128,14 +128,15 @@ void config_window() {
 
 	static std::string buffer;
 
-	ImGui::InputText("##config_name", &buffer, ImGuiInputTextFlags_EnterReturnsTrue);
-
 	if (ImGui::ListBox("", &current_config, [](void* data, int idx, const char** out_text) {
 		auto& vector = *static_cast<std::vector<std::string>*>(data);
 		*out_text = vector[idx].c_str();
 		return true;
 	}, &configs, configs.size(), 5) && current_config != -1)
 		buffer = configs[current_config];
+
+	ImGui::InputText("##config_name", &buffer, ImGuiInputTextFlags_EnterReturnsTrue);
+	ImGui::SameLine();
 
 	if (ImGui::Button("Create")) {
 		config::save(buffer);

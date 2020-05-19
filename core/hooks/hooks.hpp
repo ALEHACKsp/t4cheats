@@ -22,7 +22,7 @@ namespace hooks {
 	}
 
 	namespace draw_model_execute {
-		using fn = void(__fastcall*)(void*, void*, const model_render_info_t&, matrix_t*);
-		static void __stdcall hook(void* ctx, void* state, const model_render_info_t& info, matrix_t* custom_bone_to_world);
+		using fn = void(__thiscall*)(void*, void*, void*, const model_render_info_t&, matrix_t*);
+		static void __fastcall hook(void* ecx, void*, void* ctx, void* state, const model_render_info_t& info, matrix_t* custom_bone_to_world);
 	}
 }

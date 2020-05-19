@@ -57,9 +57,14 @@ bool hooks::initialize() {
 
 void hooks::release() {
 	MH_Uninitialize();
-	**reinterpret_cast<void***>(present_address) = reinterpret_cast<void*>(present_original);
-	SetWindowLongW(FindWindowW(L"Valve001", NULL), GWL_WNDPROC, reinterpret_cast<LONG>(wndproc_original));
 	MH_DisableHook(MH_ALL_HOOKS);
+
+	**reinterpret_cast<void***>(present_address) = present_original;
+	SetWindowLongPtrA(wnd, GWLP_WNDPROC, LONG_PTR(wndproc_original));
+
+	ImGui_ImplDX9_Shutdown();
+	ImGui_ImplWin32_Shutdown();
+	ImGui::DestroyContext();
 }
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -116,25 +121,27 @@ bool __fastcall hooks::create_move::hook(void* ecx, void* edx, int input_sample_
 	__asm mov frame_pointer, ebp;
 	bool& send_packet = *reinterpret_cast<bool*>(*frame_pointer - 0x1C);
 
-	auto old_viewangles = cmd->viewangles;
-	auto old_forwardmove = cmd->forwardmove;
-	auto old_sidemove = cmd->sidemove;
+	float old_forwardmove = cmd->forwardmove;
+	float old_sidemove = cmd->sidemove;
+	vec3_t old_viewangles = cmd->viewangles;
+
+	const bool is_alive = csgo::local_player->is_alive();
 
 	misc::movement::bunny_hop(cmd);
-	if (csgo::local_player && csgo::local_player->is_alive())
+	if (csgo::local_player && is_alive)
 		anti_aim::desync(cmd, send_packet);
 
 	if (variables::misc::clantag_spammer_enable)
 		misc::clantag_spammer();
 
-	prediction::start(cmd); {
-		if (csgo::local_player->is_alive()) {
+	if (is_alive) {
+		prediction::start(cmd); {
 			aimbot::run(cmd);
-			if (variables::misc::fake_lag_enable)
-				misc::movement::fake_lag(send_packet);
-		}
+		} prediction::end();
 
-	} prediction::end();
+		if (variables::misc::fake_lag_enable)
+			misc::movement::fake_lag(send_packet);
+	}
 
 	send_packet ? csgo::angles::fake = cmd->viewangles : csgo::angles::real = cmd->viewangles;
 
@@ -182,12 +189,13 @@ void __stdcall hooks::paint_traverse::hook(unsigned int panel, bool force_repain
 	paint_traverse_original(interfaces::panel, panel, force_repaint, allow_force);
 }
 
-void __stdcall hooks::draw_model_execute::hook(void* ctx, void* state, const model_render_info_t& info, matrix_t* custom_bone_to_world)
+void __fastcall hooks::draw_model_execute::hook(void* ecx, void*, void* ctx, void* state, const model_render_info_t& info, matrix_t* custom_bone_to_world)
 {
-	if (!csgo::local_player || interfaces::studio_render->is_force_material_override() || !std::strstr(info.model->name, "models/player"))
-		return dme_original(ctx, state, info, custom_bone_to_world);
+	if (!csgo::local_player || interfaces::studio_render->is_force_material_override())
+		return dme_original(ecx, ctx, state, info, custom_bone_to_world);
 
-	visuals::chams::render(ctx, state, info, custom_bone_to_world);
-	dme_original(ctx, state, info, custom_bone_to_world);
-	interfaces::model_render->override_material(nullptr);
+	if (visuals::chams::render(ecx, ctx, state, info, custom_bone_to_world))
+		dme_original(ecx, ctx, state, info, custom_bone_to_world);
+
+	interfaces::studio_render->forced_material_override(nullptr);
 }
