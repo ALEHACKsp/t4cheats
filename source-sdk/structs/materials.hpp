@@ -57,7 +57,6 @@ struct color_mesh_info_t;
 struct draw_model_info_t;
 class i_client_renderable;
 class data_cache_handle_t;
-class i_mat_render_context;
 struct material_lighting_state_t;
 typedef int vertex_format_t;
 typedef void* light_cache_handle_t;

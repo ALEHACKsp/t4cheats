@@ -19,26 +19,27 @@ void override_material(bool ignorez, bool flat, const color& color) {
 	interfaces::model_render->override_material(material); //override material of the model
 }
 
-void visuals::chams::render(i_mat_render_context* ctx, const draw_model_state_t& state, const model_render_info_t& info, matrix_t* matrix) {
-	auto player = reinterpret_cast<player_t*>(interfaces::entity_list->get_client_entity(info.entity_index));
+void visuals::chams::render(void* ctx, void* state, const model_render_info_t& info, matrix_t* matrix) {
+	const auto player = reinterpret_cast<player_t*>(interfaces::entity_list->get_client_entity(info.entity_index));
 	if (!player || !player->is_alive() || player->dormant() || player == csgo::local_player) //dont override localplayer for now
 		return;
+
 	if (variables::visuals::chams_enable) {
 		if (player->is_enemy(csgo::local_player)) {
 			if (variables::visuals::chams_through_walls) { //do we want to see people through walls?
 				override_material(true, true, variables::visuals::chams_colors::enemies_invisible); //override ignorez material
-				dme_original(interfaces::model_render, 0, ctx, state, info, matrix); //render first layer
+				dme_original(ctx, state, info, matrix); //render first layer
 			}
 			override_material(false, false, variables::visuals::chams_colors::enemies_visible); //override regular material
-			dme_original(interfaces::model_render, 0, ctx, state, info, matrix); //render second layer
+			dme_original(ctx, state, info, matrix); //render second layer
 		}
 		else {
 			if (variables::visuals::chams_through_walls) { //do we want to see people through walls?
 				override_material(true, true, variables::visuals::chams_colors::team_invisible); //override ignorez material
-				dme_original(interfaces::model_render, 0, ctx, state, info, matrix); //render first layer
+				dme_original(ctx, state, info, matrix); //render first layer
 			}
 			override_material(false, false, variables::visuals::chams_colors::team_visible); //override regular material
-			dme_original(interfaces::model_render, 0, ctx, state, info, matrix); //render second layer
+			dme_original(ctx, state, info, matrix); //render second layer
 		}
 	}
 }

@@ -182,12 +182,12 @@ void __stdcall hooks::paint_traverse::hook(unsigned int panel, bool force_repain
 	paint_traverse_original(interfaces::panel, panel, force_repaint, allow_force);
 }
 
-void __fastcall hooks::draw_model_execute::hook(void* _this, int edx, i_mat_render_context* ctx, const draw_model_state_t& state, const model_render_info_t& pInfo, matrix_t* pCustomBoneToWorld)
+void __stdcall hooks::draw_model_execute::hook(void* ctx, void* state, const model_render_info_t& info, matrix_t* custom_bone_to_world)
 {
-	if (!csgo::local_player || interfaces::studio_render->is_force_material_override() || !std::strstr(pInfo.model->name, "models/player"))
-		return dme_original(_this, edx, ctx, state, pInfo, pCustomBoneToWorld);
+	if (!csgo::local_player || interfaces::studio_render->is_force_material_override() || !std::strstr(info.model->name, "models/player"))
+		return dme_original(ctx, state, info, custom_bone_to_world);
 
-	visuals::chams::render(ctx, state, pInfo, pCustomBoneToWorld);
-	dme_original(_this, edx, ctx, state, pInfo, pCustomBoneToWorld);
+	visuals::chams::render(ctx, state, info, custom_bone_to_world);
+	dme_original(ctx, state, info, custom_bone_to_world);
 	interfaces::model_render->override_material(nullptr);
 }

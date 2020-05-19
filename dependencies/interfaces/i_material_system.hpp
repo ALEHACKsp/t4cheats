@@ -49,7 +49,6 @@ class KeyValues;
 class IShader;
 class IVertexTexture;
 class IMorph;
-class i_mat_render_context;
 class ICallQueue;
 struct MorphWeight_t;
 class IFileList;

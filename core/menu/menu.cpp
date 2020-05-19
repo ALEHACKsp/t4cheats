@@ -123,18 +123,12 @@ void config_window() {
 		return true;
 	}();
 
-	if (std::size_t(current_config) >= configs.size())
+	if (static_cast<std::size_t>(current_config) >= configs.size())
 		current_config = -1;
 
 	static std::string buffer;
 
 	ImGui::InputText("##config_name", &buffer, ImGuiInputTextFlags_EnterReturnsTrue);
-	ImGui::SameLine();
-
-	if (ImGui::Button("Create")) {
-		config::save(buffer);
-		reload_configs();
-	}
 
 	if (ImGui::ListBox("", &current_config, [](void* data, int idx, const char** out_text) {
 		auto& vector = *static_cast<std::vector<std::string>*>(data);
@@ -143,20 +137,27 @@ void config_window() {
 	}, &configs, configs.size(), 5) && current_config != -1)
 		buffer = configs[current_config];
 
-	if (const std::string config = configs[current_config]; !config.empty()) {
-		if (ImGui::Button("Load"))
-			config::load(config);
+	if (ImGui::Button("Create")) {
+		config::save(buffer);
+		reload_configs();
+	}
 
-		ImGui::SameLine();
+	if (current_config != -1) {
+		if (const std::string config = configs[current_config]; !config.empty()) {
+			if (ImGui::Button("Load"))
+				config::load(config);
 
-		if (ImGui::Button("Save"))
-			config::save(config);
+			ImGui::SameLine();
 
-		ImGui::SameLine();
+			if (ImGui::Button("Save"))
+				config::save(config);
 
-		if (ImGui::Button("Delete")) {
-			std::filesystem::remove(path / config);
-			reload_configs();
+			ImGui::SameLine();
+
+			if (ImGui::Button("Delete")) {
+				std::filesystem::remove(path / config);
+				reload_configs();
+			}
 		}
 
 		ImGui::SameLine();

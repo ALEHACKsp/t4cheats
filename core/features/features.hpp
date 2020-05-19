@@ -11,6 +11,7 @@ struct aimbot_target {
 namespace aimbot {
 	void run(c_usercmd* cmd);
 	extern aimbot_target target;
+
 	namespace autowall {
 		float can_hit(player_t* player, vec3_t point);
 	};
@@ -18,11 +19,13 @@ namespace aimbot {
 
 namespace visuals {
 	namespace chams {
-		void render(i_mat_render_context* ctx, const draw_model_state_t& state, const model_render_info_t& info, matrix_t* matrix);
+		void render(void* ctx, void* state, const model_render_info_t& info, matrix_t* matrix);
 	};
+
 	namespace esp {
 		void draw();
 	};
+
 	namespace other_visuals {
 		void draw();
 	};
