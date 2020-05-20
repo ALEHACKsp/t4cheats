@@ -29,6 +29,8 @@ enum cmd_buttons {
 	in_attack3 = (1 << 25)
 };
 
+class vec3_t;
+
 struct c_usercmd {
 	int pad;
 	int command_number;

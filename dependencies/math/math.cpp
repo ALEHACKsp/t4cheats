@@ -19,8 +19,8 @@ void math::correct_movement(vec3_t old_angles, c_usercmd* cmd, float old_forward
 
 	delta_view = 360.f - delta_view;
 
-	cmd->forwardmove = std::cos(DEG2RAD(delta_view)) * old_forwardmove + cos(DEG2RAD(delta_view + 90.f)) * old_sidemove;
-	cmd->sidemove = std::sin(DEG2RAD(delta_view)) * old_forwardmove + sin(DEG2RAD(delta_view + 90.f)) * old_sidemove;
+	cmd->forwardmove = std::cos(degrees_to_radians(delta_view)) * old_forwardmove + std::cos(degrees_to_radians(delta_view + 90.f)) * old_sidemove;
+	cmd->sidemove = std::sin(degrees_to_radians(delta_view)) * old_forwardmove + std::sin(degrees_to_radians(delta_view + 90.f)) * old_sidemove;
 }
 
 vec3_t math::calculate_angle(vec3_t& a, vec3_t& b) {
@@ -80,29 +80,28 @@ void math::vector_angles(vec3_t & forward, vec3_t & angles) {
 	angles.z = 0.0f;
 }
 
-void math::angle_vectors(vec3_t & angles, vec3_t * forward, vec3_t * right, vec3_t * up) {
-	float sp, sy, sr, cp, cy, cr;
+void math::angle_vectors(const vec3_t& angles, vec3_t* forward, vec3_t * right, vec3_t * up) {
+	const float radians_x = degrees_to_radians(angles.x);
+	const float radians_y = degrees_to_radians(angles.y);
 
-	sin_cos(DEG2RAD(angles.x), &sp, &cp);
-	sin_cos(DEG2RAD(angles.y), &sy, &cy);
-	sin_cos(DEG2RAD(angles.z), &sr, &cr);
+	const float sp = std::sin(radians_x);
+	const float cp = std::cos(radians_x);
+	const float sy = std::sin(radians_y);
+	const float cy = std::cos(radians_y);
 
-	if (forward) {
-		forward->x = cp * cy;
-		forward->y = cp * sy;
-		forward->z = -sp;
-	}
+	*forward = vec3_t{ cp * cy,  cp * sy, -sp };
 
-	if (right) {
-		right->x = -1 * sr * sp * cy + -1 * cr * -sy;
-		right->y = -1 * sr * sp * sy + -1 * cr * cy;
-		right->z = -1 * sr * cp;
-	}
+	if (right || up) {
+		const float radians_z = degrees_to_radians(angles.z);
 
-	if (up) {
-		up->x = cr * sp * cy + -sr * -sy;
-		up->y = cr * sp * sy + -sr * cy;
-		up->z = cr * cp;
+		const float sr = std::sin(radians_z);
+		const float cr = std::cos(radians_z);
+
+		if (right)
+			*right = vec3_t{ -1.f * sr * sp * cy + -1.f * cr * -sy, -1.f * sr * sp * sy + -1.f * cr * cy, -1.f * sr * cp };
+
+		if (up)
+			*up = vec3_t{ cr * sp * cy + -sr * -sy, cr * sp * sy + -sr * cy, cr * cp };
 	}
 }
 
