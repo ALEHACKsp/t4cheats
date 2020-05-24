@@ -1,5 +1,10 @@
 #include "menu.hpp"
 
+#include <array>
+#include <KnownFolders.h>
+#include <ShlObj_core.h>
+#include <vector>
+
 constexpr std::array captions{
 	"we are back",
 	"hL can't believe it",

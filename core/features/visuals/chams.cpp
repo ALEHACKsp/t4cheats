@@ -27,24 +27,24 @@ bool visuals::chams::render(void* ctx, void* state, const model_render_info_t& i
 		return should_redraw;
 
 	const auto player = reinterpret_cast<player_t*>(interfaces::entity_list->get_client_entity(info.entity_index));
-	if (!player || !player->is_alive() || player->dormant() || player == csgo::local_player) //dont override localplayer for now
+	if (!player || !player->is_alive() || player->dormant() || player == csgo::local_player) // don't override localplayer for now
 		return should_redraw;
 
 	if (player->is_enemy(csgo::local_player)) {
-		if (variables::visuals::chams_through_walls) { //do we want to see people through walls?
-			override_material(true, true, variables::visuals::chams_colors::enemies_invisible); //override ignorez material
-			hooks::original_draw_model_execute(interfaces::model_render, ctx, state, info, matrix); //render first layer
+		if (variables::visuals::chams_through_walls) { // do we want to see people through walls?
+			override_material(true, true, variables::visuals::chams_colors::enemies_invisible); // override ignorez material
+			hooks::original_draw_model_execute(interfaces::model_render, ctx, state, info, matrix); // render first layer
 		}
-		override_material(false, false, variables::visuals::chams_colors::enemies_visible); //override regular material
-		hooks::original_draw_model_execute(interfaces::model_render, ctx, state, info, matrix); //render second layer
+		override_material(false, false, variables::visuals::chams_colors::enemies_visible); // override regular material
+		hooks::original_draw_model_execute(interfaces::model_render, ctx, state, info, matrix); // render second layer
 		should_redraw = false;
 	}
 	else {
-		if (variables::visuals::chams_through_walls) { //do we want to see people through walls?
-			override_material(true, true, variables::visuals::chams_colors::team_invisible); //override ignorez material
-			hooks::original_draw_model_execute(interfaces::model_render, ctx, state, info, matrix); //render first layer
+		if (variables::visuals::chams_through_walls) { // do we want to see people through walls?
+			override_material(true, true, variables::visuals::chams_colors::team_invisible); // override ignorez material
+			hooks::original_draw_model_execute(interfaces::model_render, ctx, state, info, matrix); // render first layer
 		}
-		override_material(false, false, variables::visuals::chams_colors::team_visible); //override regular material
+		override_material(false, false, variables::visuals::chams_colors::team_visible); // override regular material
 	}
 
 	return should_redraw;

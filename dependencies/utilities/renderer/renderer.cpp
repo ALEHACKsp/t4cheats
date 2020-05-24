@@ -1,9 +1,5 @@
 #include "renderer.hpp"
 
-unsigned long render::fonts::main;
-unsigned long render::fonts::pixel;
-unsigned long render::fonts::pixel_shadow;
-
 void render::initialize() {
 	render::fonts::main = interfaces::surface->font_create();
 	render::fonts::pixel = interfaces::surface->font_create();
@@ -16,12 +12,12 @@ void render::initialize() {
 	console::log("[setup] render initialized!\n");
 }
 
-void render::draw_line(std::int32_t x1, std::int32_t y1, std::int32_t x2, std::int32_t y2, color colour) {
+void render::draw_line(int x1, int y1, int x2, int y2, color colour) {
 	interfaces::surface->set_drawing_color(colour.r, colour.g, colour.b, colour.a);
 	interfaces::surface->draw_line(x1, y1, x2, y2);
 }
 
-void render::draw_text_wchar(std::int32_t x, std::int32_t y, unsigned long font, const wchar_t* string, bool text_centered, color colour) {
+void render::draw_text_wchar(int x, int y, unsigned long font, const wchar_t* string, bool text_centered, color colour) {
 	int width, height;
 	interfaces::surface->get_text_size(font, string, width, height);
 	interfaces::surface->set_text_color(colour.r, colour.g, colour.b, colour.a);
@@ -33,7 +29,7 @@ void render::draw_text_wchar(std::int32_t x, std::int32_t y, unsigned long font,
 	interfaces::surface->draw_render_text(string, wcslen(string));
 }
 
-void render::draw_text_string(std::int32_t x, std::int32_t y, unsigned long font, std::string string, bool text_centered, color colour) {
+void render::draw_text_string(int x, int y, unsigned long font, std::string string, bool text_centered, color colour) {
 	const auto converted_text = std::wstring(string.begin(), string.end());
 
 	int width, height;
@@ -48,22 +44,22 @@ void render::draw_text_string(std::int32_t x, std::int32_t y, unsigned long font
 	interfaces::surface->draw_render_text(converted_text.c_str(), wcslen(converted_text.c_str()));
 }
 
-void render::draw_rect(std::int32_t x, std::int32_t y, std::int32_t w, std::int32_t h, color color) {
+void render::draw_rect(int x, int y, int w, int h, color color) {
 	interfaces::surface->set_drawing_color(color.r, color.g, color.b, color.a);
 	interfaces::surface->draw_outlined_rect(x, y, w, h);
 }
 
-void render::draw_filled_rect(std::int32_t x, std::int32_t y, std::int32_t w, std::int32_t h, color colour) {
+void render::draw_filled_rect(int x, int y, int w, int h, color colour) {
 	interfaces::surface->set_drawing_color(colour.r, colour.g, colour.b, colour.a);
 	interfaces::surface->draw_filled_rectangle(x, y, w, h);
 }
 
-void render::draw_outline(std::int32_t x, std::int32_t y, std::int32_t w, std::int32_t h, color colour) {
+void render::draw_outline(int x, int y, int w, int h, color colour) {
 	interfaces::surface->set_drawing_color(colour.r, colour.g, colour.b, colour.a);
 	interfaces::surface->draw_outlined_rect(x, y, w, h);
 }
 
-void render::draw_textured_polygon(std::int32_t n, vertex_t* vertice, color col) {
+void render::draw_textured_polygon(int n, vertex_t* vertice, color col) {
 	static unsigned char buf[4] = { 255, 255, 255, 255 };
 	unsigned int texture_id{};
 	if (!texture_id) {
@@ -75,8 +71,9 @@ void render::draw_textured_polygon(std::int32_t n, vertex_t* vertice, color col)
 	interfaces::surface->draw_polygon(n, vertice);
 }
 
-void render::draw_circle(std::int32_t x, std::int32_t y, std::int32_t r, std::int32_t s, color col) {
-	float Step = M_PI * 2.0 / s;
+void render::draw_circle(int x, int y, int r, int s, color col) {
+	float Step = M_PI * 2.f / s;
+
 	for (float a = 0; a < (M_PI * 2.0); a += Step) {
 		float x1 = r * cos(a) + x;
 		float y1 = r * sin(a) + y;
@@ -87,7 +84,7 @@ void render::draw_circle(std::int32_t x, std::int32_t y, std::int32_t r, std::in
 	}
 }
 
-void render::draw_circle_3d(std::int32_t x, std::int32_t y, std::int32_t z, std::int32_t r, std::int32_t s, color col, bool rainbow) {
+void render::draw_circle_3d(int x, int y, int z, int r, int s, color col, bool rainbow) {
 	float step = M_PI * 2.0 / s;
 	for (float a = 0; a < (M_PI * 2.0); a += step) {
 		int deg = a * (180 / M_PI);
@@ -112,6 +109,7 @@ void render::draw_xhair(int x, int y, bool outline, color col) {
 		interfaces::surface->draw_filled_rectangle(x - 3, y - 1, 7, 3);
 		interfaces::surface->draw_filled_rectangle(x - 1, y - 3, 3, 7);
 	}
+
 	interfaces::surface->set_drawing_color(col.r, col.g, col.b, col.a);
 	interfaces::surface->draw_filled_rectangle(x - 2, y, 5, 1);
 	interfaces::surface->draw_filled_rectangle(x, y - 2, 1, 5);

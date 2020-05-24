@@ -1,9 +1,10 @@
+#include <sstream>
+
 #include "utilities.hpp"
 #include "../utilities/csgo.hpp"
-#include <psapi.h>
 
 std::uint8_t* utilities::pattern_scan(const char* module_name, const char* signature) noexcept {
-    const auto module_handle = GetModuleHandleA(module_name);
+    const auto module_handle = GetModuleHandle(module_name);
 
     if (!module_handle)
         return nullptr;
@@ -62,8 +63,14 @@ void utilities::set_clantag(std::string clantag) {
 }
 
 std::string utilities::get_time_as_string() {
-	auto t = std::time(nullptr); auto tm = *std::localtime(&t);
-	std::ostringstream oss; oss << std::put_time(&tm, "%H:%M:%S");
+	std::tm time;
+	const std::time_t now = std::time(0);
+
+	localtime_s(&time, &now);
+
+	std::ostringstream oss;
+	oss << std::put_time(&time, "%H:%M:%S");
+
 	return oss.str();
 }
 

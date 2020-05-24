@@ -126,8 +126,7 @@ void draw_weapon(player_t* player) {
 }
 
 void draw_headdot(player_t* player, color color) {
-	vec3_t screen_head_pos;
-	if (math::world_to_screen(player->get_hitbox_position(hitbox_head), screen_head_pos))
+	if (vec3_t screen_head_pos; math::world_to_screen(player->get_hitbox_position(hitbox_head), screen_head_pos))
 		render::draw_xhair(screen_head_pos.x, screen_head_pos.y, true, color);
 }
 

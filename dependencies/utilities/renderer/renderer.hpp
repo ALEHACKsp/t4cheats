@@ -34,8 +34,8 @@ namespace render {
 	vec2_t get_text_size(unsigned long font, std::string text);
 
 	namespace fonts {
-		extern unsigned long main;
-		extern unsigned long pixel;
-		extern unsigned long pixel_shadow;
+		inline unsigned long main;
+		inline unsigned long pixel;
+		inline unsigned long pixel_shadow;
 	}
 }

@@ -1,7 +1,6 @@
 #pragma once
 
-class anim_state {
-public:
+struct anim_state {
 	char pad_0x0000[0x18]; //0x0000
 	float anim_update_timer; //0x0018 
 	char pad_0x001C[0xC]; //0x001C
@@ -115,18 +114,15 @@ public:
 	char pad_0x0340[0x4]; //0x0340
 };
 
-class anim_layer {
-public:
+struct anim_layer {
 	char pad_0000[20];
-	uint32_t order;
-	uint32_t sequence;
-	float prev_cycle;
+	int order;
+	int sequence;
+	float previous_cycle;
 	float weight;
 	float weight_delta_rate;
 	float playback_rate;
 	float cycle;
-	void* owner;
+	entity_t* owner;
 	char pad_0038[4];
-
-	anim_layer() {}
 };

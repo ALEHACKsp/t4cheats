@@ -183,14 +183,15 @@ enum item_definition_indexes {
 	GLOVE_SPECIALIST = 5034,
 	GLOVE_HYDRA = 5035
 };
+
 enum obs_modes {
 	obs_mode_none = 0,
-	obs_mode_deathcam = 1,
-	obs_mode_freezecam = 2,
-	obs_mode_fixed = 3,
-	obs_mode_in_eye = 4,
-	obs_mode_chase = 5,
-	obs_mode_roaming = 6
+	obs_mode_deathcam,
+	obs_mode_freezecam,
+	obs_mode_fixed,
+	obs_mode_in_eye,
+	obs_mode_chase,
+	obs_mode_roaming
 };
 
 class entity_t {
@@ -198,33 +199,41 @@ public:
 	void* animating() {
 		return reinterpret_cast<void*>(uintptr_t(this) + 0x4);
 	}
+
 	void* networkable() {
 		return reinterpret_cast<void*>(uintptr_t(this) + 0x8);
 	}
+
 	collideable_t* collideable() {
 		using original_fn = collideable_t * (__thiscall*)(void*);
 		return (*(original_fn * *)this)[3](this);
 	}
+
 	matrix_t& coordinateframe() {
 		static auto m_rgflCoordinateFrame = netvar_manager::get_net_var(fnv::hash("DT_BaseEntity"), fnv::hash("m_CollisionGroup")) - 0x30;
 		return *(matrix_t*)((uintptr_t)this + m_rgflCoordinateFrame);
 	}
+
 	c_client_class* client_class() {
 		using original_fn = c_client_class * (__thiscall*)(void*);
 		return (*(original_fn * *)networkable())[2](networkable());
 	}
+
 	int index() {
 		using original_fn = int(__thiscall*)(void*);
 		return (*(original_fn * *)networkable())[10](networkable());
 	}
+
 	bool is_player() {
 		using original_fn = bool(__thiscall*)(entity_t*);
 		return (*(original_fn * *)this)[157](this);
 	}
+
 	bool is_weapon() {
 		using original_fn = bool(__thiscall*)(entity_t*);
 		return (*(original_fn * *)this)[165](this);
 	}
+
 	bool setup_bones(matrix_t * out, int max_bones, int mask, float time) {
 		if (!this)
 			return false;
@@ -232,23 +241,28 @@ public:
 		using original_fn = bool(__thiscall*)(void*, matrix_t*, int, int, float);
 		return (*(original_fn * *)animating())[13](animating(), out, max_bones, mask, time);
 	}
+
 	model_t* model() {
 		using original_fn = model_t * (__thiscall*)(void*);
 		return (*(original_fn * *)animating())[8](animating());
 	}
+
 	void update() {
 		using original_fn = void(__thiscall*)(entity_t*);
 		(*(original_fn * *)this)[218](this);
 	}
+
 	int draw_model(int flags, uint8_t alpha) {
 		using original_fn = int(__thiscall*)(void*, int, uint8_t);
 		return (*(original_fn * *)animating())[9](animating(), flags, alpha);
 	}
+
 	void set_angles(vec3_t angles) {
 		using original_fn = void(__thiscall*)(void*, const vec3_t&);
 		static original_fn set_angles_fn = (original_fn)((DWORD)utilities::pattern_scan("client_panorama.dll", "55 8B EC 83 E4 F8 83 EC 64 53 56 57 8B F1"));
 		set_angles_fn(this, angles);
 	}
+
 	void set_position(vec3_t position) {
 		using original_fn = void(__thiscall*)(void*, const vec3_t&);
 		static original_fn set_position_fn = (original_fn)((DWORD)utilities::pattern_scan("client_panorama.dll", "55 8B EC 83 E4 F8 51 53 56 57 8B F1 E8"));
@@ -275,45 +289,46 @@ public:
 		return (*(original_fn * *)networkable())[13](networkable());
 	}
 
-	NETVAR("DT_CSPlayer", "m_fFlags", flags, int);
-	OFFSET(bool, dormant, 0xED);
-	NETVAR("DT_BaseEntity", "m_hOwnerEntity", owner_handle, unsigned long);
-	NETVAR("DT_CSPlayer", "m_flSimulationTime", simulation_time, float);
-	NETVAR("DT_BasePlayer", "m_vecOrigin", origin, vec3_t);
-	NETVAR("DT_BasePlayer", "m_vecViewOffset[0]", view_offset, vec3_t);
-	NETVAR("DT_CSPlayer", "m_iTeamNum", team, int);
-	NETVAR("DT_BaseEntity", "m_bSpotted", spotted, bool);
-	NETVAR("DT_CSPlayer", "m_nSurvivalTeam", survival_team, int);
-	NETVAR("DT_CSPlayer", "m_flHealthShotBoostExpirationTime", health_boost_time, float);
+	offset(bool, dormant, 0xED)
+
+	netvar("DT_CSPlayer", "m_fFlags", flags, int)
+	netvar("DT_BaseEntity", "m_hOwnerEntity", owner_handle, unsigned long)
+	netvar("DT_CSPlayer", "m_flSimulationTime", simulation_time, float)
+	netvar("DT_BasePlayer", "m_vecOrigin", origin, vec3_t)
+	netvar("DT_BasePlayer", "m_vecViewOffset[0]", view_offset, vec3_t)
+	netvar("DT_CSPlayer", "m_iTeamNum", team, int)
+	netvar("DT_BaseEntity", "m_bSpotted", spotted, bool)
+	netvar("DT_CSPlayer", "m_nSurvivalTeam", survival_team, int)
+	netvar("DT_CSPlayer", "m_flHealthShotBoostExpirationTime", health_boost_time, float)
 };
 
 class econ_view_item_t {
 public:
-	NETVAR("DT_ScriptCreatedItem", "m_bInitialized", is_initialized, bool);
-	NETVAR("DT_ScriptCreatedItem", "m_iEntityLevel", entity_level, int);
-	NETVAR("DT_ScriptCreatedItem", "m_iAccountID", account_id, int);
-	NETVAR("DT_ScriptCreatedItem", "m_iItemIDLow", item_id_low, int);
+	netvar("DT_ScriptCreatedItem", "m_bInitialized", is_initialized, bool)
+	netvar("DT_ScriptCreatedItem", "m_iEntityLevel", entity_level, int)
+	netvar("DT_ScriptCreatedItem", "m_iAccountID", account_id, int)
+	netvar("DT_ScriptCreatedItem", "m_iItemIDLow", item_id_low, int)
 };
 
 class base_view_model_t : public entity_t {
 public:
-	NETVAR("DT_BaseViewModel", "m_nModelIndex", model_index, int);
-	NETVAR("DT_BaseViewModel", "m_nViewModelIndex", view_model_index, int);
-	NETVAR("DT_BaseViewModel", "m_hWeapon", m_hweapon, int);
-	NETVAR("DT_BaseViewModel", "m_hOwner", m_howner, int);
+	netvar("DT_BaseViewModel", "m_nModelIndex", model_index, int);
+	netvar("DT_BaseViewModel", "m_nViewModelIndex", view_model_index, int);
+	netvar("DT_BaseViewModel", "m_hWeapon", m_hweapon, int);
+	netvar("DT_BaseViewModel", "m_hOwner", m_howner, int);
 };
 
 class weapon_t : public entity_t {
 public:
-	NETVAR("DT_BaseCombatWeapon", "m_flNextPrimaryAttack", next_primary_attack, float);
-	NETVAR("DT_BaseCombatWeapon", "m_flNextSecondaryAttack", next_secondary_attack, float);
-	NETVAR("DT_BaseCombatWeapon", "m_iClip1", clip1_count, int);
-	NETVAR("DT_BaseCombatWeapon", "m_iClip2", clip2_count, int);
-	NETVAR("DT_BaseCombatWeapon", "m_iPrimaryReserveAmmoCount", primary_reserve_ammo_acount, int);
-	NETVAR("DT_WeaponCSBase", "m_flRecoilIndex", recoil_index, float);
-	NETVAR("DT_WeaponCSBaseGun", "m_zoomLevel", zoom_level, float);
-	NETVAR("DT_BaseAttributableItem", "m_iItemDefinitionIndex", item_definition_index, short);
-	NETVAR("DT_BaseCombatWeapon", "m_iEntityQuality", entity_quality, int);
+	netvar("DT_BaseCombatWeapon", "m_flNextPrimaryAttack", next_primary_attack, float);
+	netvar("DT_BaseCombatWeapon", "m_flNextSecondaryAttack", next_secondary_attack, float);
+	netvar("DT_BaseCombatWeapon", "m_iClip1", clip1_count, int);
+	netvar("DT_BaseCombatWeapon", "m_iClip2", clip2_count, int);
+	netvar("DT_BaseCombatWeapon", "m_iPrimaryReserveAmmoCount", primary_reserve_ammo_acount, int);
+	netvar("DT_WeaponCSBase", "m_flRecoilIndex", recoil_index, float);
+	netvar("DT_WeaponCSBaseGun", "m_zoomLevel", zoom_level, float);
+	netvar("DT_BaseAttributableItem", "m_iItemDefinitionIndex", item_definition_index, short);
+	netvar("DT_BaseCombatWeapon", "m_iEntityQuality", entity_quality, int);
 
 	float inaccuracy() {
 		using original_fn = float(__thiscall*)(void*);
@@ -409,90 +424,48 @@ private:
 	}
 
 public:
-	NETVAR("DT_BasePlayer", "m_hViewModel[0]", view_model, int);
-	NETVAR("DT_CSPlayer", "m_bHasDefuser", has_defuser, bool);
-	NETVAR("DT_CSPlayer", "m_bGunGameImmunity", has_gun_game_immunity, bool);
-	NETVAR("DT_CSPlayer", "m_iShotsFired", shots_fired, int);
-	NETVAR("DT_CSPlayer", "m_angEyeAngles", eye_angles, vec3_t);
-	NETVAR("DT_CSPlayer", "m_ArmorValue", armor, int);
-	NETVAR("DT_CSPlayer", "m_bHasHelmet", has_helmet, bool);
-	NETVAR("DT_CSPlayer", "m_bIsScoped", is_scoped, bool);
-	NETVAR("DT_CSPlayer", "m_bIsDefusing", is_defusing, bool);
-	NETVAR("DT_CSPlayer", "m_iAccount", money, int);
-	NETVAR("DT_CSPlayer", "m_flLowerBodyYawTarget", lower_body_yaw, float);
-	NETVAR("DT_CSPlayer", "m_flNextAttack", next_attack, float);
-	NETVAR("DT_CSPlayer", "m_flFlashDuration", flash_duration, float);
-	NETVAR("DT_CSPlayer", "m_flFlashMaxAlpha", flash_alpha, float);
-	NETVAR("DT_CSPlayer", "m_bHasNightVision", m_bHasNightVision, float);
-	NETVAR("DT_CSPlayer", "m_bNightVisionOn", m_bNightVisionOn, float);
-	NETVAR("DT_CSPlayer", "m_iHealth", health, int);
-	NETVAR("DT_CSPlayer", "m_lifeState", life_state, int);
-	NETVAR("DT_CSPlayer", "m_fFlags", flags, int);
-	NETVAR("DT_BasePlayer", "m_viewPunchAngle", punch_angle, vec3_t);
-	NETVAR("DT_BasePlayer", "m_aimPunchAngle", aim_punch_angle, vec3_t);
-	NETVAR("DT_BasePlayer", "m_vecVelocity[0]", velocity, vec3_t);
-	NETVAR("DT_BasePlayer", "m_flMaxspeed", max_speed, float);
-	NETVAR("DT_BaseEntity", "m_flShadowCastDistance", m_flFOVTime, float);
-	NETVAR("DT_BasePlayer", "m_hObserverTarget", observer_target, unsigned long);
-	NETVAR("DT_BasePlayer", "m_iObserverMode", observer_mode, int);
-	NETVAR("DT_BasePlayer", "m_nHitboxSet", hitbox_set, int);
-	NETVAR("DT_CSPlayer", "m_flDuckAmount", duck_amount, float);
-	NETVAR("DT_CSPlayer", "m_bHasHeavyArmor", has_heavy_armor, bool);
-	NETVAR("DT_SmokeGrenadeProjectile", "m_nSmokeEffectTickBegin", smoke_grenade_tick_begin, int);
-	NETVAR("DT_CSPlayer", "m_nTickBase", get_tick_base, int);
+	netvar("DT_CSPlayer", "m_ArmorValue", armor, int)
+	netvar("DT_CSPlayer", "m_bHasHelmet", has_helmet, bool)
+	netvar("DT_CSPlayer", "m_bIsScoped", is_scoped, bool)
+	netvar("DT_CSPlayer", "m_flFlashDuration", flash_duration, float)
+	netvar("DT_CSPlayer", "m_flFlashMaxAlpha", flash_alpha, float)
+	netvar("DT_CSPlayer", "m_bHasNightVision", m_bHasNightVision, float)
+	netvar("DT_CSPlayer", "m_bNightVisionOn", m_bNightVisionOn, float)
+	netvar("DT_CSPlayer", "m_iHealth", health, int)
+	netvar("DT_CSPlayer", "m_lifeState", life_state, int)
+	netvar("DT_CSPlayer", "m_fFlags", flags, int)
+	netvar("DT_CSPlayer", "m_nTickBase", get_tick_base, int)
+	netvar("DT_CSPlayer", "m_flDuckAmount", duck_amount, float)
+	netvar("DT_CSPlayer", "m_bHasHeavyArmor", has_heavy_armor, bool)
+	netvar("DT_BasePlayer", "m_hViewModel[0]", view_model, int)
+	netvar("DT_BasePlayer", "m_viewPunchAngle", punch_angle, vec3_t)
+	netvar("DT_BasePlayer", "m_aimPunchAngle", aim_punch_angle, vec3_t)
+	netvar("DT_BasePlayer", "m_vecVelocity[0]", velocity, vec3_t)
+	netvar("DT_BasePlayer", "m_flMaxspeed", max_speed, float)
+	netvar("DT_BaseEntity", "m_flShadowCastDistance", m_flFOVTime, float)
+	netvar("DT_BasePlayer", "m_hObserverTarget", observer_target, unsigned long)
+	netvar("DT_BasePlayer", "m_iObserverMode", observer_mode, int)
+	netvar("DT_BasePlayer", "m_nHitboxSet", hitbox_set, int)
+	netvar("DT_SmokeGrenadeProjectile", "m_nSmokeEffectTickBegin", smoke_grenade_tick_begin, int)
+
+	offset(anim_state*, animstate, 0x3900)
+	offset(float, spawn_time, 0xA360)
+
+	virtual_method(vec3_t&, get_abs_origin(), 10, (this))
+	virtual_method(void, update_client_side_animations(), 223, (this))
+	virtual_method(weapon_t*, active_weapon(), 267, (this))
 
 	player_t* get_observer_target() {
 		return reinterpret_cast<player_t*>(interfaces::entity_list->get_client_entity_handle(this->observer_target()));;
-	}
-
-	weapon_t* active_weapon() {
-		auto active_weapon = read<uintptr_t>(netvar_manager::get_net_var(fnv::hash("DT_CSPlayer"), fnv::hash("m_hActiveWeapon"))) & 0xFFF;
-		return reinterpret_cast<weapon_t*>(interfaces::entity_list->get_client_entity(active_weapon));
-	}
-
-	UINT* get_wearables() {
-		return (UINT*)((uintptr_t)this + (netvar_manager::get_net_var(fnv::hash("DT_CSPlayer"), fnv::hash("m_hMyWearables"))));
-	}
-
-	UINT* get_weapons() {
-		return (UINT*)((uintptr_t)this + (netvar_manager::get_net_var(fnv::hash("DT_CSPlayer"), fnv::hash("m_hMyWeapons"))));
 	}
 
 	vec3_t get_eye_pos() {
 		return origin() + view_offset();
 	}
 
-	anim_state* get_anim_state() {
-		return *reinterpret_cast<anim_state * *>(this + 0x3900);
-	}
-
-	bool can_see_player_pos(player_t* player, const vec3_t& pos) {
-		trace_t tr;
-		ray_t ray;
-		trace_filter filter;
-		filter.skip = this;
-
-		ray.initialize(get_eye_pos(), pos);
-		interfaces::trace_ray->trace_ray(ray, MASK_SHOT | CONTENTS_GRATE, &filter, &tr);
-
-		return tr.entity == player || tr.flFraction > .97f;
-	}
-
-	void invalidate_bone_cache() {
-		*(unsigned int*)((DWORD)this + 0x2924) = 0xFF7FFFFF; // m_flLastBoneSetupTime = -FLT_MAX;
-		*(unsigned int*)((DWORD)this + 0x2690) = 0;
-	}
-
-	vec3_t get_bone_position(int bone) {
-		if (matrix_t matrix[MAXSTUDIOBONES]; setup_bones(matrix, 128, 256, 0.f))
-			return { matrix[bone][0][3], matrix[bone][1][3], matrix[bone][2][3] };
-
-		return { };
-	}
-
-	vec3_t get_hitbox_position(int hitbox_id) {
+	vec3_t get_hitbox_position(int i) {
 		if (const auto studio_model = interfaces::model_info->get_studio_model(model())) {
-			if (const auto hitbox = studio_model->hitbox_set(0)->hitbox(hitbox_id)) {
+			if (const auto hitbox = studio_model->hitbox_set(0)->hitbox(i)) {
 				matrix_t bone_matrix[MAXSTUDIOBONES];
 
 				if (!setup_bones(bone_matrix, MAXSTUDIOBONES, BONE_USED_BY_HITBOX, 0.f))
@@ -514,82 +487,12 @@ public:
 		return life_state() == 0;
 	}
 
-	bool is_moving() {
-		if (this->velocity().length() > 0.1f)
-			return true;
-
-		return false;
-	}
-
-	bool is_in_air() {
-		if (this->flags() & fl_onground)
-			return false;
-
-		return true;
-	}
-
-	bool is_flashed() {
-		if (this->flash_duration() > 0.0f)
-			return true;
-
-		return false;
-	}
-
-	void update_client_side_animations() {
-		using original_fn = void(__thiscall*)(void*);
-		(*(original_fn * *)this)[223](this);
-	}
-
-	vec3_t& abs_origin() {
-		using original_fn = vec3_t & (__thiscall*)(void*);
-		return (*(original_fn * *)this)[10](this);;
-	}
-	vec3_t& abs_angles() {
-		using original_fn = vec3_t & (__thiscall*)(void*);
-		return (*(original_fn * *)this)[11](this);;
-	}
-
-	int move_type() {
-		static int type = netvar_manager::get_net_var(fnv::hash("DT_BaseEntity"), fnv::hash("m_nRenderMode")) + 1;
-		return read<int>(type);
-	}
-
-	bool is_dangerzone() {
-		static auto game_type = interfaces::console->get_convar("game_type");
-		static auto game_mode = interfaces::console->get_convar("game_mode");
-		if (game_type == nullptr || game_mode == nullptr)
-			return false;
-		return game_type->numerical_value == 6;
-	}
-
 	bool is_enemy(player_t* target) {
-		if (is_dangerzone())
-			return this->survival_team() != target->survival_team() || target->survival_team() == -1;
-		else
-			return this->team() != target->team();
-	}
-
-	float* pose_param() const {
-		static int _m_flPoseParameter = netvar_manager::get_net_var(fnv::hash("DT_BaseAnimating"), fnv::hash("m_flPoseParameter"));
-		return (float*)((uintptr_t)this + _m_flPoseParameter);
-	}
-	anim_layer* get_anim_overlays() {
-		return *(anim_layer * *)((DWORD)this + 0x2980);
-	}
-	anim_layer* get_anim_overlay(int i) {
-		if (i < 15)
-			return &get_anim_overlays()[i];
-		return nullptr;
-	}
-	int get_num_of_anim_overlays() {
-		return *(int*)((DWORD)this + 0x298C);
+		return this->team() != target->team();
 	}
 };
 
-struct inferno_t : public entity_t {
-	OFFSET(float, get_spawn_time, 0x20);
-
-	static float get_expiry_time() {
-		return 7.f;
-	}
+class inferno_t : public entity_t {
+public:
+	offset(float, spawn_time, 0x20)
 };

@@ -77,13 +77,12 @@ HRESULT D3DAPI present(IDirect3DDevice9* device, const RECT* source, const RECT*
 	return hooks::present_original(device, source, dest, window_override, dirty_region);
 }
 
-BOOL WINAPI set_cursor_pos(int x, int y)
-{
+BOOL WINAPI set_cursor_pos(int x, int y) {
 	return variables::menu::opened || hooks::set_cursor_pos_original(x, y);
 }
 
-bool __fastcall create_move(void* ecx, void*, int input_sample_frametime, c_usercmd* cmd) {
-	bool result = hooks::original_create_move(ecx, input_sample_frametime, cmd);
+bool __stdcall create_move(int input_sample_frametime, c_usercmd* cmd) {
+	const bool result = hooks::original_create_move(interfaces::clientmode, input_sample_frametime, cmd);
 
 	if (!cmd || !cmd->command_number)
 		return result;
