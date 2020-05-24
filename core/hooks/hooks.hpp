@@ -14,11 +14,13 @@ struct model_render_info_t;
 class vec3_t;
 
 namespace hooks {
-	bool initialize();
+	void initialize(HMODULE);
+	void hook();
 	void release();
 
 	inline std::add_pointer_t<HRESULT D3DAPI(IDirect3DDevice9*, D3DPRESENT_PARAMETERS*)> reset_original;
 	inline std::add_pointer_t<HRESULT D3DAPI(IDirect3DDevice9*, const RECT*, const RECT*, HWND, const RGNDATA*)> present_original;
+	inline std::add_pointer_t<BOOL WINAPI(int, int)> set_cursor_pos_original;
 	inline WNDPROC wnd_proc_original;
 
 	inline bool(__thiscall* original_create_move)(void*, float, c_usercmd*);

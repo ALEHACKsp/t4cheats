@@ -8,11 +8,7 @@
 
 void console::initialize(const char* title) {
 	AllocConsole();
-	freopen_s(reinterpret_cast<FILE**>(stdin), "conin$", "r", stdin);
-	freopen_s(reinterpret_cast<FILE**>(stdout), "conout$", "w", stdout);
+	freopen_s(reinterpret_cast<std::FILE**>(stdin), "conin$", "r", stdin);
+	freopen_s(reinterpret_cast<std::FILE**>(stdout), "conout$", "w", stdout);
 	SetConsoleTitle(title);
-}
-
-void console::release() {
-	FreeConsole();
 }

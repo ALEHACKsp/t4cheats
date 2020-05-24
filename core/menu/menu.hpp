@@ -8,5 +8,5 @@ namespace menu {
 	void init();
 	void render();
 
-	std::string get_caption();
+	const char* get_caption();
 };

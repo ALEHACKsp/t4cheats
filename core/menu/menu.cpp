@@ -11,12 +11,14 @@ constexpr std::array captions{
 	"dominating legits since 1000 BC"
 };
 
-static std::string caption;
+static const char* caption;
 static ImFont* font;
 
 void menu::init() {
+	ImFontConfig cfg;
+	cfg.OversampleV = 3;
+
 	const ImGuiIO& io = ImGui::GetIO();
-	font = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\Tahoma.ttf", 12.0f, NULL, io.Fonts->GetGlyphRangesDefault());
 
 	ImGui::StyleColorsDarker();
 
@@ -31,7 +33,17 @@ void menu::init() {
 	style.WindowPadding = ImVec2(0.f, 8.f);
 	style.WindowMinSize = ImVec2(400.f, 300.f);
 
-	caption = captions[rand() % captions.size()];
+	if (PWSTR path_to_fonts; SUCCEEDED(SHGetKnownFolderPath(FOLDERID_Fonts, 0, nullptr, &path_to_fonts))) {
+		const std::filesystem::path path = path_to_fonts;
+		CoTaskMemFree(path_to_fonts);
+
+		const auto glyphRanges = io.Fonts->GetGlyphRangesDefault();
+
+		font = io.Fonts->AddFontFromFileTTF((path / "Tahoma.ttf").string().c_str(), 12.f, &cfg, glyphRanges);
+	}
+
+	std::srand(std::time(0));
+	caption = captions[std::rand() % captions.size()];
 }
 
 void aimbot_window() {
@@ -174,7 +186,7 @@ void menu::render() {
 	if (!variables::menu::opened)
 		return;
 
-	const std::string title = "t4cheats - " + caption;
+	const std::string title = std::string("t4cheats - ").append(caption);
 
 	ImGui::PushFont(font);
 	ImGui::Begin(title.c_str(), nullptr, ImGuiWindowFlags_NoCollapse); {
@@ -207,6 +219,6 @@ void menu::render() {
 	ImGui::End();
 }
 
-std::string menu::get_caption() {
+const char* menu::get_caption() {
 	return caption;
 }
