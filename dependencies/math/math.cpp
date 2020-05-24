@@ -105,17 +105,20 @@ void math::angle_vectors(const vec3_t& angles, vec3_t* forward, vec3_t * right, 
 	}
 }
 
-bool math::screen_transform(const vec3_t & point, vec3_t & screen) {
-	static auto& w2sMatrix = interfaces::engine->world_to_screen_matrix();
+static D3DMATRIX view_matrix;
 
-	screen.x = w2sMatrix.m[0][0] * point.x + w2sMatrix.m[0][1] * point.y + w2sMatrix.m[0][2] * point.z + w2sMatrix.m[0][3];
-	screen.y = w2sMatrix.m[1][0] * point.x + w2sMatrix.m[1][1] * point.y + w2sMatrix.m[1][2] * point.z + w2sMatrix.m[1][3];
-	screen.z = 0.0f;
-	float w = w2sMatrix.m[3][0] * point.x + w2sMatrix.m[3][1] * point.y + w2sMatrix.m[3][2] * point.z + w2sMatrix.m[3][3];
+bool math::screen_transform(const vec3_t& point, vec3_t& screen) {
+	view_matrix = interfaces::engine->world_to_screen_matrix();
 
-	if (w < 0.001f) {
-		screen.x *= 100000;
-		screen.y *= 100000;
+	screen.x = view_matrix.m[0][0] * point.x + view_matrix.m[0][1] * point.y + view_matrix.m[0][2] * point.z + view_matrix.m[0][3];
+	screen.y = view_matrix.m[1][0] * point.x + view_matrix.m[1][1] * point.y + view_matrix.m[1][2] * point.z + view_matrix.m[1][3];
+	screen.z = 0.f;
+
+	float w = view_matrix.m[3][0] * point.x + view_matrix.m[3][1] * point.y + view_matrix.m[3][2] * point.z + view_matrix.m[3][3];
+
+	if (w < .001f) {
+		screen.x *= 100000.f;
+		screen.y *= 100000.f;
 		return false;
 	}
 

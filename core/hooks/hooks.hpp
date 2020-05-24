@@ -15,7 +15,7 @@ class vec3_t;
 
 namespace hooks {
 	void initialize(HMODULE);
-	void hook();
+	void hook_methods();
 	void release();
 
 	inline std::add_pointer_t<HRESULT D3DAPI(IDirect3DDevice9*, D3DPRESENT_PARAMETERS*)> reset_original;

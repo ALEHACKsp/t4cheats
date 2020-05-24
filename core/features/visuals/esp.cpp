@@ -1,7 +1,9 @@
 #include "../features.hpp"
 
+#include "../../../source-sdk/math/vector3d.hpp"
+
 RECT get_bounds(entity_t* entity) {
-	const auto collideable = entity->collideable();
+	const auto collideable = entity->get_collideable();
 	if (!collideable)
 		return { };
 
@@ -22,7 +24,7 @@ RECT get_bounds(entity_t* entity) {
 	vec3_t points_transformed[8];
 	vec3_t screen_points[8];
 
-	matrix_t coordinate_frame = entity->coordinateframe();
+	matrix_t coordinate_frame = entity->coordinate_frame();
 
 	for (int i = 0; i < 8; ++i)
 		math::transform_vector(points[i], coordinate_frame, points_transformed[i]);
@@ -74,21 +76,26 @@ void draw_name(player_t* player) {
 	static wchar_t name[128]; player_info_t info;
 	interfaces::engine->get_player_info(player->index(), &info);
 	std::string string_name = info.name;
+
 	if (string_name.length() > 16) {
 		string_name.resize(16);
 		string_name += "...";
 	}
+
 	int wname_dimensions[2];
 	int width = 10;
+
 	if (MultiByteToWideChar(CP_UTF8, 0, string_name.c_str(), -1, name, 128)) {
 		interfaces::surface->get_text_size(render::fonts::main, name, wname_dimensions[0], wname_dimensions[1]);
-		render::draw_text_wchar(bbox.left + ((bbox.right - bbox.left) * .5f) - (info.fakeplayer ? (render::get_text_size(render::fonts::pixel, "[BOT]").x / 2) + 2 : 0), bbox.top - 16, render::fonts::main, name, true, color(255, 255, 255, 200));
+		render::draw_text_wchar(bbox.left + ((bbox.right - bbox.left) * .5f) - (info.fake_player ? (render::get_text_size(render::fonts::pixel, "[BOT]").x / 2) + 2 : 0), bbox.top - 16, render::fonts::main, name, true, color(255, 255, 255, 200));
 		width += wname_dimensions[0];
 	}
-	if (info.fakeplayer) {
+
+	if (info.fake_player) {
 		width += render::get_text_size(render::fonts::pixel, "[BOT]").x;
 		render::draw_text_string(bbox.left + ((bbox.right - bbox.left) * .5f) - (width * .5f) + wname_dimensions[0] + 6, bbox.top - 15, render::fonts::pixel, "[BOT]", false, color(200, 200, 200, 200));
 	}
+
 	render::draw_filled_rect(bbox.left + ((bbox.right - bbox.left) * .5f) - (width * .5f), bbox.top - 18, width, wname_dimensions[1] + 4, color(50, 50, 50, 150));
 	render::draw_outline(bbox.left + ((bbox.right - bbox.left) * .5f) - (width * .5f), bbox.top - 18, width, wname_dimensions[1] + 4, color(25, 25, 25, 150));
 	render::draw_line(bbox.left + ((bbox.right - bbox.left) * .5f) - (width * .5f), bbox.top - 18, bbox.left + ((bbox.right - bbox.left) * .5f) - (width * .5f) + width, bbox.top - 18, player->team() == 2 ? color(190, 160, 60, 200) : color(60, 120, 190, 200));
@@ -112,17 +119,18 @@ void draw_healthbar(player_t* player) {
 }
 
 void draw_weapon(player_t* player) {
-	if (player->active_weapon()) {
-		auto weapon = player->active_weapon();
-		auto y = bbox.bottom + 1 + (variables::visuals::esp_show_healthbar * 11); //haha, i love doing stuff like this
-		std::string weapon_text = weapon->get_weapon_name();
-		if (weapon->clip1_count() >= 0)
-			weapon_text += " [" + std::to_string(weapon->clip1_count()) + "/" + std::to_string(weapon->primary_reserve_ammo_acount()) + "]";
-		auto width = render::get_text_size(render::fonts::pixel, weapon_text).x + 5;
-		render::draw_filled_rect(bbox.left + ((bbox.right - bbox.left) * .5f) - (width * .5f), y, width, 9, color(50, 50, 50, 150));
-		render::draw_outline(bbox.left + ((bbox.right - bbox.left) * .5f) - (width * .5f), y, width, 9, color(25, 25, 25, 150));
-		render::draw_text_string(bbox.left + ((bbox.right - bbox.left) * .5f), y - 1, render::fonts::pixel, weapon_text, true, color(240, 240, 240, 200));
-	}
+	const auto weapon = player->get_active_weapon();
+	if (!weapon)
+		return;
+
+	auto y = bbox.bottom + 1 + (variables::visuals::esp_show_healthbar * 11); //haha, i love doing stuff like this
+	std::string weapon_text = weapon->get_weapon_name();
+	if (weapon->ammo() >= 0)
+		weapon_text += " [" + std::to_string(weapon->ammo()) + "/" + std::to_string(weapon->primary_reserve_ammo_acount()) + "]";
+	auto width = render::get_text_size(render::fonts::pixel, weapon_text).x + 5;
+	render::draw_filled_rect(bbox.left + ((bbox.right - bbox.left) * .5f) - (width * .5f), y, width, 9, color(50, 50, 50, 150));
+	render::draw_outline(bbox.left + ((bbox.right - bbox.left) * .5f) - (width * .5f), y, width, 9, color(25, 25, 25, 150));
+	render::draw_text_string(bbox.left + ((bbox.right - bbox.left) * .5f), y - 1, render::fonts::pixel, weapon_text, true, color(240, 240, 240, 200));
 }
 
 void draw_headdot(player_t* player, color color) {
@@ -131,9 +139,9 @@ void draw_headdot(player_t* player, color color) {
 }
 
 void visuals::esp::draw() {
-	for (int i = 1; i < interfaces::globals->max_clients; i++) {
+	for (int i = 1; i < interfaces::global_vars->max_clients; i++) {
 		auto entity = reinterpret_cast<player_t*>(interfaces::entity_list->get_client_entity(i));
-		if (!entity || !entity->is_player() || entity->dormant() || !entity->is_alive() || entity == csgo::local_player) //dont draw esp for localplayer for now
+		if (!entity || !entity->is_player() || entity->is_dormant() || !entity->is_alive() || entity == csgo::local_player) //dont draw esp for localplayer for now
 			continue;
 
 		if (variables::visuals::esp_enemies_only && !entity->is_enemy(csgo::local_player))

@@ -2,9 +2,9 @@
 
 void misc::clantag_spammer() {
 	static float last_change = 0.f;
-	if (interfaces::globals->realtime - last_change >= 0.25f) {
+	if (interfaces::global_vars->realtime - last_change >= 0.25f) {
 		std::string clantag = "";
-		switch (int(interfaces::globals->cur_time * 4.f) % 41) { //add latency for better sync
+		switch (int(interfaces::global_vars->cur_time * 4.f) % 41) { //add latency for better sync
 			case 0:  clantag = "               "; break;
 			case 1:  clantag = "              t"; break;
 			case 2:  clantag = "             t4"; break;
@@ -49,7 +49,7 @@ void misc::clantag_spammer() {
 			case 41:  clantag = " "; break;
 		}
 		utilities::set_clantag(clantag);
-		last_change = interfaces::globals->realtime;
+		last_change = interfaces::global_vars->realtime;
 	}
 }
 

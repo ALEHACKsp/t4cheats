@@ -6,8 +6,8 @@ struct vec3_t;
 constexpr auto degrees_to_radians = [](float degrees) constexpr noexcept { return degrees * static_cast<float>(M_PI) / 180.f; };
 constexpr auto radians_to_degrees = [](float radians) constexpr noexcept { return radians * 180.f / static_cast<float>(M_PI); };
 
-constexpr auto time_to_ticks = [](float time) constexpr noexcept { return static_cast<int>(.5f + time / interfaces::globals->interval_per_tick); };
-constexpr auto ticks_to_time = [](int ticks) constexpr noexcept { return interfaces::globals->interval_per_tick * static_cast<float>(ticks); };
+constexpr auto time_to_ticks = [](float time) constexpr noexcept { return static_cast<int>(.5f + time / interfaces::global_vars->interval_per_tick); };
+constexpr auto ticks_to_time = [](int ticks) constexpr noexcept { return interfaces::global_vars->interval_per_tick * static_cast<float>(ticks); };
 
 namespace math {
 	void correct_movement(vec3_t old_angles, c_usercmd* cmd, float old_forwardmove, float old_sidemove);

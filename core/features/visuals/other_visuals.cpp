@@ -17,7 +17,7 @@ void draw_crosshair() {
 		y += (screen_size.second / 90) * punch.x;
 	}
 
-	render::draw_xhair(x, y, variables::visuals::crosshair_recoil, variables::visuals::crosshair_color);
+	render::draw_xhair(x, y, variables::visuals::crosshair_outline, variables::visuals::crosshair_color);
 }
 
 void visualize_choke() {
@@ -49,9 +49,9 @@ void draw_spectator_list(int x, int y) {
 	const int spectator_box_y = y + 16;
 	int spectator_box_height = 0, spectator_text_offset = 0;
 
-	for (int i = 1; i <= interfaces::globals->max_clients; ++i) {
+	for (int i = 1; i <= interfaces::global_vars->max_clients; ++i) {
 		const auto player = reinterpret_cast<player_t*>(interfaces::entity_list->get_client_entity(i));
-		if (!player || player == csgo::local_player || player->dormant() || player->is_alive() || player->get_observer_target() != observer_target)
+		if (!player || player == csgo::local_player || player->is_dormant() || player->is_alive() || player->get_observer_target() != observer_target)
 			continue;
 
 		player_info_t info;
@@ -109,7 +109,7 @@ void draw_fire_timer(inferno_t* entity) {
 	constexpr float inferno_life_time = 7.03125f;
 	static const vec2_t size{ 60.f, 4.f };
 
-	const float life = ((entity->spawn_time() + inferno_life_time) - interfaces::globals->cur_time) / inferno_life_time;
+	const float life = ((entity->spawn_time() + inferno_life_time) - interfaces::global_vars->cur_time) / inferno_life_time;
 
 	render::draw_filled_rect(screen_pos.x - size.x * .5f, screen_pos.y - size.y * .5f, size.x, size.y, color(45, 45, 45, life >= .1f ? 255 : 255 * (life / .1f)));
 	render::draw_filled_rect(screen_pos.x - size.x * .5f + 2, screen_pos.y - size.y * .5f + 1, (size.x - 4) * life, size.y - 2, color(240, 100, 100, life >= .1f ? 255 : 255 * (life / .1f)));
@@ -123,7 +123,7 @@ void visuals::other_visuals::draw() {
 		if (!entity)
 			continue;
 
-		switch (entity->client_class()->class_id) {
+		switch (entity->get_client_class()->class_id) {
 			case class_ids::cinferno:
 				if (variables::visuals::fire_timer_enable)
 					draw_fire_timer(reinterpret_cast<inferno_t*>(entity));

@@ -162,7 +162,6 @@
     <ClInclude Include="dependencies\interfaces\i_game_event_manager.hpp" />
     <ClInclude Include="dependencies\interfaces\i_input.hpp" />
     <ClInclude Include="dependencies\interfaces\i_input_system.hpp" />
-    <ClInclude Include="dependencies\interfaces\i_localize.hpp" />
     <ClInclude Include="dependencies\interfaces\imageformats.h" />
     <ClInclude Include="dependencies\interfaces\i_material_system.hpp" />
     <ClInclude Include="dependencies\interfaces\interfaces.hpp" />

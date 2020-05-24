@@ -1,5 +1,7 @@
 #include "../features.hpp"
 
+#define NOMINMAX
+
 // credit to https://www.unknowncheats.me/forum/counterstrike-global-offensive/255054-autowall-convar-scaling.html for the penetration convar scaling system
 
 enum hitgroup : int {
@@ -14,7 +16,7 @@ enum hitgroup : int {
 	gear
 };
 
-void bullet_type(bool sv_penetration_type, float& penetration_power, float& penetration_distance, const char* bullet_type) {
+void get_bullet_type(bool sv_penetration_type, float& penetration_power, float& penetration_distance, const char* bullet_type) {
 	if (sv_penetration_type) {
 		penetration_power = 35.f;
 		penetration_distance = 3000.f;
@@ -76,7 +78,8 @@ void clip_trace_to_player(player_t* player, const vec3_t& start, const vec3_t& e
 	if (!filter->ShouldHitEntity(player, mask))
 		return;
 
-	ray_t ray; ray.initialize(start, end);
+	ray_t ray;
+	ray.initialize(start, end);
 	trace_t trace;
 	interfaces::trace_ray->trace_ray(ray, mask, filter, &trace);
 
@@ -121,7 +124,7 @@ void scale_damage(trace_t& trace, float weapon_armor_ratio, float& current_damag
 }
 
 bool is_breakable(player_t* entity) {
-	if (const auto client_class = entity->client_class())
+	if (const auto client_class = entity->get_client_class())
 		return client_class->class_id == cbreakableprop || client_class->class_id == cbreakablesurface;
 
 	return false;
@@ -202,22 +205,22 @@ bool handle_bullet_penetration(player_t* player, weapon_info_t* weapon_data, tra
 	if (sv_penetration_type) {
 		if (enter_material == CHAR_TEX_GRATE || enter_material == CHAR_TEX_GLASS) {
 			combined_penetration_modifier = 3.f;
-			final_damage_modifier = 0.05f;
+			final_damage_modifier = .05f;
 		}
 		else if (is_solid_surf || is_light_surf) {
 			combined_penetration_modifier = 1.f;
-			final_damage_modifier = 0.16f;
+			final_damage_modifier = .16f;
 		}
 		else if (enter_material == CHAR_TEX_FLESH && (!trace.entity->is_enemy(player) && ff_damage_reduction_bullets == 0.f)) {
 			if (ff_damage_bullet_penetration == 0.f)
 				return false;
 
 			combined_penetration_modifier = ff_damage_bullet_penetration;
-			final_damage_modifier = 0.16f;
+			final_damage_modifier = .16f;
 		}
 		else {
 			combined_penetration_modifier = (enter_surface_data->game_props.penetration_modifier + exit_surface_data->game_props.penetration_modifier) / 2.f;
-			final_damage_modifier = 0.16f;
+			final_damage_modifier = .16f;
 		}
 
 		if (enter_material == exit_material) {
@@ -229,8 +232,8 @@ bool handle_bullet_penetration(player_t* player, weapon_info_t* weapon_data, tra
 
 		thickness = (exit.end - trace.end).length_sqr();
 
-		const float modifier = std::fmax(1.f / combined_penetration_modifier, 0.f);
-		const float lost_damage = std::fmax(((modifier * thickness) / 24.f) + ((current_damage * final_damage_modifier) + (std::fmax(3.75f / penetration_power, 0.f) * 3.f * modifier)), 0.f);
+		const float modifier = std::max<float>(1.f / combined_penetration_modifier, 0.f);
+		const float lost_damage = std::max<float>(((modifier * thickness) / 24.f) + ((current_damage * final_damage_modifier) + (std::fmax(3.75f / penetration_power, 0.f) * 3.f * modifier)), 0.f);
 
 		if (lost_damage > current_damage)
 			return false;
@@ -273,7 +276,7 @@ bool handle_bullet_penetration(player_t* player, weapon_info_t* weapon_data, tra
 }
 
 bool fire_bullet(player_t* player, const vec3_t direction, float& current_damage) {
-	const auto weapon = player->active_weapon();
+	const auto weapon = player->get_active_weapon();
 	if (!weapon)
 		return false;
 
@@ -287,7 +290,7 @@ bool fire_bullet(player_t* player, const vec3_t direction, float& current_damage
 	const vec3_t eye_position = player->get_eye_pos();
 
 	float penetration_power = 0.f, penetration_distance = 0.f;
-	bullet_type(sv_penetration_type, penetration_power, penetration_distance, weapon_data->szBulletType);
+	get_bullet_type(sv_penetration_type, penetration_power, penetration_distance, weapon_data->szBulletType);
 
 	if (sv_penetration_type)
 		penetration_power = weapon_data->flPenetration;

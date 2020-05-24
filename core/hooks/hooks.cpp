@@ -20,7 +20,7 @@ LRESULT __stdcall wnd_proc(HWND window, UINT message, WPARAM wparam, LPARAM lpar
 		menu::init();
 
 		try {
-			hooks::hook();
+			hooks::hook_methods();
 		}
 		catch (const std::runtime_error& error) {
 			FreeConsole();
@@ -230,7 +230,7 @@ void hooks::initialize(HMODULE module) {
 if (MH_CreateHook(target, &function, reinterpret_cast<void**>(&original)) != MH_OK) \
     throw std::runtime_error("failed to initialize hook");
 
-void hooks::hook() {
+void hooks::hook_methods() {
 	auto get_virtual = [](void* base, std::size_t index) -> void* {
 		return reinterpret_cast<void*>(static_cast<unsigned int>((*reinterpret_cast<int**>(base))[index]));
 	};

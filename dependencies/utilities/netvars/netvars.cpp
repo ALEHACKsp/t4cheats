@@ -54,9 +54,7 @@ namespace netvar_manager {
 		const auto dump_vars = true;  //true if netvar dump
 
 		std::map< std::string, std::map< uintptr_t, std::string > > var_dump;
-		for (auto client_class = interfaces::client->get_client_classes();
-			client_class;
-			client_class = client_class->next_ptr) {
+		for (auto client_class = interfaces::client->get_client_classes(); client_class; client_class = client_class->next_ptr) {
 			const auto table = reinterpret_cast<recv_table*>(client_class->recvtable_ptr);
 			const auto table_name = table->table_name;
 			const auto table_name_hash = fnv::hash(table_name);

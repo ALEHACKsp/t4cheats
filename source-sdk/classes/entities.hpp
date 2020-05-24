@@ -1,10 +1,15 @@
 #pragma once
-#include "../../dependencies/math/math.hpp"
+
 #include <array>
+
 #include "collideable.hpp"
 #include "client_class.hpp"
 #include "../structs/animstate.hpp"
+#include "../../dependencies/math/math.hpp"
 #include "../../dependencies/utilities/netvars/netvars.hpp"
+
+class matrix_t;
+struct weapon_info_t;
 
 enum data_update_type_t {
 	DATA_UPDATE_CREATED = 0,
@@ -196,110 +201,24 @@ enum obs_modes {
 
 class entity_t {
 public:
-	void* animating() {
-		return reinterpret_cast<void*>(uintptr_t(this) + 0x4);
-	}
-
-	void* networkable() {
-		return reinterpret_cast<void*>(uintptr_t(this) + 0x8);
-	}
-
-	collideable_t* collideable() {
-		using original_fn = collideable_t * (__thiscall*)(void*);
-		return (*(original_fn * *)this)[3](this);
-	}
-
-	matrix_t& coordinateframe() {
-		static auto m_rgflCoordinateFrame = netvar_manager::get_net_var(fnv::hash("DT_BaseEntity"), fnv::hash("m_CollisionGroup")) - 0x30;
-		return *(matrix_t*)((uintptr_t)this + m_rgflCoordinateFrame);
-	}
-
-	c_client_class* client_class() {
-		using original_fn = c_client_class * (__thiscall*)(void*);
-		return (*(original_fn * *)networkable())[2](networkable());
-	}
-
-	int index() {
-		using original_fn = int(__thiscall*)(void*);
-		return (*(original_fn * *)networkable())[10](networkable());
-	}
-
-	bool is_player() {
-		using original_fn = bool(__thiscall*)(entity_t*);
-		return (*(original_fn * *)this)[157](this);
-	}
-
-	bool is_weapon() {
-		using original_fn = bool(__thiscall*)(entity_t*);
-		return (*(original_fn * *)this)[165](this);
-	}
-
-	bool setup_bones(matrix_t * out, int max_bones, int mask, float time) {
-		if (!this)
-			return false;
-
-		using original_fn = bool(__thiscall*)(void*, matrix_t*, int, int, float);
-		return (*(original_fn * *)animating())[13](animating(), out, max_bones, mask, time);
-	}
-
-	model_t* model() {
-		using original_fn = model_t * (__thiscall*)(void*);
-		return (*(original_fn * *)animating())[8](animating());
-	}
-
-	void update() {
-		using original_fn = void(__thiscall*)(entity_t*);
-		(*(original_fn * *)this)[218](this);
-	}
-
-	int draw_model(int flags, uint8_t alpha) {
-		using original_fn = int(__thiscall*)(void*, int, uint8_t);
-		return (*(original_fn * *)animating())[9](animating(), flags, alpha);
-	}
-
-	void set_angles(vec3_t angles) {
-		using original_fn = void(__thiscall*)(void*, const vec3_t&);
-		static original_fn set_angles_fn = (original_fn)((DWORD)utilities::pattern_scan("client_panorama.dll", "55 8B EC 83 E4 F8 83 EC 64 53 56 57 8B F1"));
-		set_angles_fn(this, angles);
-	}
-
-	void set_position(vec3_t position) {
-		using original_fn = void(__thiscall*)(void*, const vec3_t&);
-		static original_fn set_position_fn = (original_fn)((DWORD)utilities::pattern_scan("client_panorama.dll", "55 8B EC 83 E4 F8 51 53 56 57 8B F1 E8"));
-		set_position_fn(this, position);
-	}
-
-	void set_model_index(int index) {
-		using original_fn = void(__thiscall*)(void*, int);
-		return (*(original_fn * *)this)[75](this, index);
-	}
-
-	void net_pre_data_update(int update_type) {
-		using original_fn = void(__thiscall*)(void*, int);
-		return (*(original_fn * *)networkable())[6](networkable(), update_type);
-	}
-
-	void net_release() {
-		using original_fn = void(__thiscall*)(void*);
-		return (*(original_fn * *)networkable())[1](networkable());
-	}
-
-	int net_set_destroyed_on_recreate_entities() {
-		using original_fn = int(__thiscall*)(void*);
-		return (*(original_fn * *)networkable())[13](networkable());
-	}
-
-	offset(bool, dormant, 0xED)
-
 	netvar("DT_CSPlayer", "m_fFlags", flags, int)
-	netvar("DT_BaseEntity", "m_hOwnerEntity", owner_handle, unsigned long)
+	netvar("DT_CSPlayer", "m_iTeamNum", team, int)
 	netvar("DT_CSPlayer", "m_flSimulationTime", simulation_time, float)
+	netvar("DT_CSPlayer", "m_nSurvivalTeam", survival_team, int)
+	netvar("DT_BaseEntity", "m_hOwnerEntity", owner_handle, unsigned long)
+	netvar("DT_BaseEntity", "m_bSpotted", spotted, bool)
 	netvar("DT_BasePlayer", "m_vecOrigin", origin, vec3_t)
 	netvar("DT_BasePlayer", "m_vecViewOffset[0]", view_offset, vec3_t)
-	netvar("DT_CSPlayer", "m_iTeamNum", team, int)
-	netvar("DT_BaseEntity", "m_bSpotted", spotted, bool)
-	netvar("DT_CSPlayer", "m_nSurvivalTeam", survival_team, int)
-	netvar("DT_CSPlayer", "m_flHealthShotBoostExpirationTime", health_boost_time, float)
+
+	virtual_method(collideable_t*, get_collideable(), 3, (this))
+	virtual_method(bool, is_alive(), 155, (this))
+	virtual_method(bool, is_player(), 157, (this))
+	virtual_method(const model_t*, get_model(), 8, (this + 4))
+	virtual_method(const matrix_t&, coordinate_frame(), 32, (this + 4))
+	virtual_method(c_client_class*, get_client_class(), 2, (this + 8))
+	virtual_method(bool, is_dormant(), 9, (this + 8))
+	virtual_method(int, index(), 10, (this + 8))
+	virtual_method(bool, setup_bones(matrix_t* out, int max_bones, int mask, float time), 13, (this + 8, out, max_bones, mask, time))
 };
 
 class econ_view_item_t {
@@ -312,101 +231,86 @@ public:
 
 class base_view_model_t : public entity_t {
 public:
-	netvar("DT_BaseViewModel", "m_nModelIndex", model_index, int);
-	netvar("DT_BaseViewModel", "m_nViewModelIndex", view_model_index, int);
-	netvar("DT_BaseViewModel", "m_hWeapon", m_hweapon, int);
-	netvar("DT_BaseViewModel", "m_hOwner", m_howner, int);
+	netvar("DT_BaseViewModel", "m_nModelIndex", model_index, int)
+	netvar("DT_BaseViewModel", "m_nViewModelIndex", view_model_index, int)
+	netvar("DT_BaseViewModel", "m_hWeapon", m_hweapon, int)
+	netvar("DT_BaseViewModel", "m_hOwner", m_howner, int)
 };
 
 class weapon_t : public entity_t {
 public:
-	netvar("DT_BaseCombatWeapon", "m_flNextPrimaryAttack", next_primary_attack, float);
-	netvar("DT_BaseCombatWeapon", "m_flNextSecondaryAttack", next_secondary_attack, float);
-	netvar("DT_BaseCombatWeapon", "m_iClip1", clip1_count, int);
-	netvar("DT_BaseCombatWeapon", "m_iClip2", clip2_count, int);
-	netvar("DT_BaseCombatWeapon", "m_iPrimaryReserveAmmoCount", primary_reserve_ammo_acount, int);
-	netvar("DT_WeaponCSBase", "m_flRecoilIndex", recoil_index, float);
-	netvar("DT_WeaponCSBaseGun", "m_zoomLevel", zoom_level, float);
-	netvar("DT_BaseAttributableItem", "m_iItemDefinitionIndex", item_definition_index, short);
-	netvar("DT_BaseCombatWeapon", "m_iEntityQuality", entity_quality, int);
+	netvar("DT_BaseCombatWeapon", "m_flNextPrimaryAttack", next_primary_attack, float)
+	netvar("DT_BaseCombatWeapon", "m_flNextSecondaryAttack", next_secondary_attack, float)
+	netvar("DT_BaseCombatWeapon", "m_iClip1", ammo, int)
+	netvar("DT_BaseCombatWeapon", "m_iPrimaryReserveAmmoCount", primary_reserve_ammo_acount, int)
+	netvar("DT_WeaponCSBase", "m_flRecoilIndex", recoil_index, float)
+	netvar("DT_WeaponCSBaseGun", "m_zoomLevel", zoom_level, float)
+	netvar("DT_BaseAttributableItem", "m_iItemDefinitionIndex", item_definition_index, short)
+	netvar("DT_BaseCombatWeapon", "m_iEntityQuality", entity_quality, int)
 
-	float inaccuracy() {
-		using original_fn = float(__thiscall*)(void*);
-		return (*(original_fn * *)this)[482](this);
-	}
-
-	float get_spread() {
-		using original_fn = float(__thiscall*)(void*);
-		return (*(original_fn * *)this)[452](this);
-	}
-
-	void update_accuracy_penalty() {
-		using original_fn = void(__thiscall*)(void*);
-		(*(original_fn * *)this)[483](this);
-	}
-
-	weapon_info_t* get_weapon_data() {
-		return interfaces::weapon_system->get_weapon_data(this->item_definition_index());
-	}
+	virtual_method(weapon_info_t*, get_weapon_data(), 460, (this))
+	virtual_method(float, get_spread(), 452, (this))
+	virtual_method(float, get_inaccuracy(), 482, (this))
+	virtual_method(void, update_accuracy_penalty(), 483, (this))
 
 	std::string get_weapon_name() {
-		switch (this->client_class()->class_id)
+		switch (this->get_client_class()->class_id)
 		{
-		case class_ids::cak47: return "ak47"; break;
-		case class_ids::cbreachcharge: return "breachcharge"; break;
-		case class_ids::cbumpmine: return "bumpmine"; break;
-		case class_ids::cc4: return "c4"; break;
-		case class_ids::cdeagle: return "deagle"; break;
-		case class_ids::cdecoygrenade: return "decoygrenade"; break;
-		case class_ids::cflashbang: return "flashbang"; break;
-		case class_ids::chegrenade: return "hegrenade"; break;
-		case class_ids::cincendiarygrenade: return "incendiarygrenade"; break;
-		case class_ids::cknife: return "knife"; break;
-		case class_ids::cknifegg: return "golden knife"; break;
-		case class_ids::cmelee: return "melee"; break;
-		case class_ids::cfists: return "fists"; break;
-		case class_ids::cmolotovgrenade: return "molotovgrenade"; break;
-		case class_ids::cscar17: return "scar17"; break;
-		case class_ids::csensorgrenade: return "sensorgrenade"; break;
-		case class_ids::csmokegrenade: return "smokegrenade"; break;
-		case class_ids::csnowball: return "snowball"; break;
-		case class_ids::ctablet: return "tablet"; break;
-		case class_ids::cweaponaug: return "aug"; break;
-		case class_ids::cweaponawp: return "awp"; break;
-		case class_ids::cweaponbizon: return "bizon"; break;
-		case class_ids::cweaponelite: return "elites"; break;
-		case class_ids::cweaponfamas: return "famas"; break;
-		case class_ids::cweaponfiveseven: return "fiveseven"; break;
-		case class_ids::cweapong3sg1: return "g3sg1"; break;
-		case class_ids::cweapongalil: return "galil"; break;
-		case class_ids::cweapongalilar: return "galilar"; break;
-		case class_ids::cweaponglock: return "glock"; break;
-		case class_ids::cweaponhkp2000: return "hkp2000"; break;
-		case class_ids::cweaponm249: return "m249"; break;
-		case class_ids::cweaponm4a1: return "m4a1"; break;
-		case class_ids::cweaponmac10: return "mac10"; break;
-		case class_ids::cweaponmag7: return "mag7"; break;
-		case class_ids::cweaponmp5navy: return "mp5sd"; break;
-		case class_ids::cweaponmp7: return "mp7"; break;
-		case class_ids::cweaponmp9: return "mp9"; break;
-		case class_ids::cweaponnegev: return "negev"; break;
-		case class_ids::cweaponnova: return "nova"; break;
-		case class_ids::cweaponp250: return "p250"; break;
-		case class_ids::cweaponp90: return "p90"; break;
-		case class_ids::cweaponsawedoff: return "sawedoff"; break;
-		case class_ids::cweaponscar20: return "scar20"; break;
-		case class_ids::cweaponscout: return "scout"; break;
-		case class_ids::cweaponsg550: return "sg550"; break;
-		case class_ids::cweaponsg552: return "sg552"; break;
-		case class_ids::cweaponsg556: return "sg556"; break;
-		case class_ids::cweaponshield: return "shield"; break;
-		case class_ids::cweaponssg08: return "ssg08"; break;
-		case class_ids::cweapontaser: return "taser"; break;
-		case class_ids::cweapontec9: return "tec9"; break;
-		case class_ids::cweaponump45: return "ump45"; break;
-		case class_ids::cweaponusp: return "usp-s"; break;
-		case class_ids::cweaponxm1014: return "xm1014"; break;
-		default: return ""; break;
+		case class_ids::cak47: return "ak47";
+		case class_ids::cbreachcharge: return "breachcharge";
+		case class_ids::cbumpmine: return "bumpmine";
+		case class_ids::cc4: return "c4";
+		case class_ids::cdeagle: return "deagle";
+		case class_ids::cdecoygrenade: return "decoygrenade";
+		case class_ids::cflashbang: return "flashbang";
+		case class_ids::chegrenade: return "hegrenade";
+		case class_ids::cincendiarygrenade: return "incendiarygrenade";
+		case class_ids::cknife: return "knife";
+		case class_ids::cknifegg: return "golden knife";
+		case class_ids::cmelee: return "melee";
+		case class_ids::cfists: return "fists";
+		case class_ids::cmolotovgrenade: return "molotovgrenade";
+		case class_ids::cscar17: return "scar17";
+		case class_ids::csensorgrenade: return "sensorgrenade";
+		case class_ids::csmokegrenade: return "smokegrenade";
+		case class_ids::csnowball: return "snowball";
+		case class_ids::ctablet: return "tablet";
+		case class_ids::cweaponaug: return "aug";
+		case class_ids::cweaponawp: return "awp";
+		case class_ids::cweaponbizon: return "bizon";
+		case class_ids::cweaponelite: return "elites";
+		case class_ids::cweaponfamas: return "famas";
+		case class_ids::cweaponfiveseven: return "fiveseven";
+		case class_ids::cweapong3sg1: return "g3sg1";
+		case class_ids::cweapongalil: return "galil";
+		case class_ids::cweapongalilar: return "galilar";
+		case class_ids::cweaponglock: return "glock";
+		case class_ids::cweaponhkp2000: return "hkp2000";
+		case class_ids::cweaponm249: return "m249";
+		case class_ids::cweaponm4a1: return "m4a1";
+		case class_ids::cweaponmac10: return "mac10";
+		case class_ids::cweaponmag7: return "mag7";
+		case class_ids::cweaponmp5navy: return "mp5sd";
+		case class_ids::cweaponmp7: return "mp7";
+		case class_ids::cweaponmp9: return "mp9";
+		case class_ids::cweaponnegev: return "negev";
+		case class_ids::cweaponnova: return "nova";
+		case class_ids::cweaponp250: return "p250";
+		case class_ids::cweaponp90: return "p90";
+		case class_ids::cweaponsawedoff: return "sawedoff";
+		case class_ids::cweaponscar20: return "scar20";
+		case class_ids::cweaponscout: return "scout";
+		case class_ids::cweaponsg550: return "sg550";
+		case class_ids::cweaponsg552: return "sg552";
+		case class_ids::cweaponsg556: return "sg556";
+		case class_ids::cweaponshield: return "shield";
+		case class_ids::cweaponssg08: return "ssg08";
+		case class_ids::cweapontaser: return "taser";
+		case class_ids::cweapontec9: return "tec9";
+		case class_ids::cweaponump45: return "ump45";
+		case class_ids::cweaponusp: return "usp-s";
+		case class_ids::cweaponxm1014: return "xm1014";
+		default: return "";
 		}
 	}
 };
@@ -452,8 +356,9 @@ public:
 	offset(float, spawn_time, 0xA360)
 
 	virtual_method(vec3_t&, get_abs_origin(), 10, (this))
+	virtual_method(bool, is_alive(), 155, (this))
 	virtual_method(void, update_client_side_animations(), 223, (this))
-	virtual_method(weapon_t*, active_weapon(), 267, (this))
+	virtual_method(weapon_t*, get_active_weapon(), 267, (this))
 
 	player_t* get_observer_target() {
 		return reinterpret_cast<player_t*>(interfaces::entity_list->get_client_entity_handle(this->observer_target()));;
@@ -464,7 +369,7 @@ public:
 	}
 
 	vec3_t get_hitbox_position(int i) {
-		if (const auto studio_model = interfaces::model_info->get_studio_model(model())) {
+		if (const auto studio_model = interfaces::model_info->get_studio_model(this->get_model())) {
 			if (const auto hitbox = studio_model->hitbox_set(0)->hitbox(i)) {
 				matrix_t bone_matrix[MAXSTUDIOBONES];
 
@@ -481,10 +386,6 @@ public:
 		}
 
 		return { };
-	}
-
-	bool is_alive() {
-		return life_state() == 0;
 	}
 
 	bool is_enemy(player_t* target) {
