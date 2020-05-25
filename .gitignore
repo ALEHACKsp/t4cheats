@@ -1,4 +1,3 @@
-
 *.pdb
 *.ilk
 *.dll
@@ -9,6 +8,6 @@
 *.ipch
 *.opendb
 *.db
-.vs/csgo-cheat/v16/.suo
+.vs
 *.user
 *.txt
