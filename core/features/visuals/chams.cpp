@@ -1,5 +1,11 @@
 #include "../features.hpp"
+
+#include "../../../dependencies/interfaces/interfaces.hpp"
+#include "../../../dependencies/interfaces/i_material_system.hpp"
+#include "../../../dependencies/interfaces/i_client_entity_list.hpp"
+#include "../../../dependencies/interfaces/iv_model_render.hpp"
 #include "../../../dependencies/interfaces/i_studio_render.h"
+#include "../../../source-sdk/structs/materials.hpp"
 
 static void override_material(bool ignorez, bool flat, const color& color) {
 	static const auto material_shaded = interfaces::material_system->find_material("debug/debugambientcube");

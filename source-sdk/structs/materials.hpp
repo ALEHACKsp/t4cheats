@@ -1,5 +1,7 @@
 #pragma once
 
+#include "../../dependencies/utilities/virtual_method.h"
+
 enum material_var_flags_t {
 	material_var_ignorez = 1 << 15
 };

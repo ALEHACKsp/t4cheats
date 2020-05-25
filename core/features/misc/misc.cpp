@@ -1,5 +1,7 @@
 ﻿#include "../features.hpp"
 
+#include "../../../dependencies/interfaces/i_client_state.hpp"
+
 void misc::clantag_spammer() {
 	static float last_change = 0.f;
 	if (interfaces::global_vars->realtime - last_change >= 0.25f) {
@@ -81,5 +83,6 @@ void misc::movement::bunny_hop(c_usercmd* cmd) { //any public source, was alread
 
 void misc::movement::fake_lag(bool& send_packet) {
 	//dont send a packet if your current amount of choked packets is below or equal to your maximum fakelag value minus your jitter
-	send_packet = interfaces::clientstate->net_channel->choked_packets >= (variables::misc::fake_lag_max - (variables::misc::fake_lag_jitter > 0 ? rand() % variables::misc::fake_lag_jitter : 0));
+	std::srand(std::time(0));
+	send_packet = interfaces::clientstate->net_channel->choked_packets >= (variables::misc::fake_lag_max - (variables::misc::fake_lag_jitter > 0 ? std::rand() % variables::misc::fake_lag_jitter : 0));
 };

@@ -3,9 +3,8 @@
 #include <string_view>
 #include <type_traits>
 
+#include "../../source-sdk/structs/materials.hpp"
 #include "../utilities/virtual_method.h"
-
-class i_material;
 
 enum class override_type {
 	normal = 0,

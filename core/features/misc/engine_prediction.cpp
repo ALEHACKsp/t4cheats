@@ -1,4 +1,9 @@
 #include "engine_prediction.hpp"
+
+#include "../../../dependencies/interfaces/interfaces.hpp"
+#include "../../../dependencies/interfaces/i_player_movement.hpp"
+#include "../../../dependencies/interfaces/c_global_vars_base.hpp"
+#include "../../../dependencies/utilities/utilities.hpp"
 #include "../../../dependencies/utilities/csgo.hpp"
 
 static player_move_data move_data;

@@ -1,11 +1,7 @@
 #pragma once
 
-#include <cmath>
 #include <algorithm>
-
-constexpr double M_PI = 3.14159265358979323846;
-constexpr float M_RADPI = 57.295779513082f;
-constexpr float M_PI_F = static_cast<float>(M_PI);
+#include <cmath>
 
 class matrix_t {
 	float mat[3][4];

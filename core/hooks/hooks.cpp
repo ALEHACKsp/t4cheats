@@ -1,10 +1,17 @@
 #pragma once
 
-#include "../../dependencies/utilities/csgo.hpp"
 #include "../features/features.hpp"
 #include "../features/misc/engine_prediction.hpp"
 #include "../menu/menu.hpp"
+
+#include "../../dependencies/interfaces/i_input_system.hpp"
+#include "../../dependencies/interfaces/i_client_entity_list.hpp"
+#include "../../dependencies/interfaces/iv_engine_client.hpp"
+#include "../../dependencies/interfaces/i_studio_render.h"
+#include "../../dependencies/interfaces/i_panel.hpp"
+#include "../../dependencies/utilities/renderer/renderer.hpp"
 #include "../../dependencies/utilities/virtual_method.h"
+#include "../../source-sdk/math/vector2d.hpp"
 
 static std::uintptr_t reset_address;
 static std::uintptr_t set_cursor_pos_address;

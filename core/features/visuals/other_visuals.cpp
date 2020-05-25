@@ -1,5 +1,11 @@
 #include "../features.hpp"
 
+#include "../../../dependencies/interfaces/c_global_vars_base.hpp"
+#include "../../../dependencies/interfaces/i_client_entity_list.hpp"
+#include "../../../dependencies/interfaces/i_client_state.hpp"
+#include "../../../dependencies/interfaces/iv_engine_client.hpp"
+#include "../../../dependencies/interfaces/i_surface.hpp"
+
 void draw_crosshair() {
 	std::pair<int, int> screen_size;
 

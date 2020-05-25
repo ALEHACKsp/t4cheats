@@ -152,7 +152,6 @@
       <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</DeploymentContent>
     </ClInclude>
     <ClInclude Include="dependencies\interfaces\glow_manager.hpp" />
-    <ClInclude Include="dependencies\interfaces\i_app_system.hpp" />
     <ClInclude Include="dependencies\interfaces\i_client_state.hpp" />
     <ClInclude Include="dependencies\interfaces\i_console.hpp" />
     <ClInclude Include="dependencies\interfaces\i_base_client_dll.hpp" />
@@ -169,7 +168,6 @@
     <ClInclude Include="dependencies\interfaces\iv_engine_client.hpp" />
     <ClInclude Include="dependencies\interfaces\iv_model_info.hpp" />
     <ClInclude Include="dependencies\interfaces\iv_model_render.hpp" />
-    <ClInclude Include="dependencies\interfaces\i_render_view.hpp" />
     <ClInclude Include="dependencies\interfaces\i_trace.hpp" />
     <ClInclude Include="dependencies\math\math.hpp" />
     <ClInclude Include="dependencies\utilities\console\console.hpp" />

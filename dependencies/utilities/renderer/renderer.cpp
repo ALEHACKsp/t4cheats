@@ -1,9 +1,14 @@
 #include "renderer.hpp"
 
 #include "../utilities.hpp"
+#include "../console/console.hpp"
 #include "../../interfaces/interfaces.hpp"
 #include "../../math/math.hpp"
 #include "../../../dependencies/interfaces/i_surface.hpp"
+#include "../../../source-sdk/misc/color.hpp"
+#include "../../../source-sdk/math/vector3d.hpp"
+
+struct vec2_t;
 
 void render::initialize() {
 	render::fonts::main = interfaces::surface->font_create();
@@ -75,13 +80,14 @@ void render::draw_textured_polygon(int n, vertex_t* vertice, const color& c) {
 }
 
 void render::draw_circle(int x, int y, int r, int s, const color& c) {
-	float Step = M_PI * 2.f / s;
+	const float step = static_cast<float>(M_PI) * 2.f / s;
 
-	for (float a = 0; a < (M_PI * 2.0); a += Step) {
-		float x1 = r * cos(a) + x;
-		float y1 = r * sin(a) + y;
-		float x2 = r * cos(a + Step) + x;
-		float y2 = r * sin(a + Step) + y;
+	for (float a = 0.f; a < static_cast<float>(M_PI) * 2.f; a += step) {
+		const float x1 = r * std::cos(a) + x;
+		const float y1 = r * std::sin(a) + y;
+		const float x2 = r * std::cos(a + step) + x;
+		const float y2 = r * std::sin(a + step) + y;
+
 		interfaces::surface->set_drawing_color(c.r, c.g, c.b, c.a);
 		interfaces::surface->draw_line(x1, y1, x2, y2);
 	}

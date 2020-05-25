@@ -3,6 +3,7 @@
 
 #include "netvars.hpp"
 #include "../../interfaces/interfaces.hpp"
+#include "../../interfaces/i_base_client_dll.hpp"
 #include "../../../source-sdk/classes/client_class.hpp"
 
 namespace netvar_manager {
@@ -57,13 +58,10 @@ namespace netvar_manager {
 		std::map< std::string, std::map< uintptr_t, std::string > > var_dump;
 		for (auto client_class = interfaces::client->get_client_classes(); client_class; client_class = client_class->next) {
 			const auto table = reinterpret_cast<recv_table*>(client_class->recv_table);
-			const auto table_name = table->net_table_name;
-			const auto table_name_hash = fnv::hash(table_name);
-
-			if (table == nullptr)
+			if (!table)
 				continue;
 
-			add_props_for_table(table_map, table_name_hash, table_name, table, dump_vars, var_dump);
+			add_props_for_table(table_map, fnv::hash(table->net_table_name), table->net_table_name, table, dump_vars, var_dump);
 		}
 	}
 }

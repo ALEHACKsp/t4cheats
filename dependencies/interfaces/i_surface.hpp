@@ -1,31 +1,16 @@
 #pragma once
+
+#include "../utilities/virtual_method.h"
 #include "../../source-sdk/structs/vertex_t.hpp"
 
 class i_surface {
 public:
-	void set_drawing_color(int r, int g, int b, int a = 255) {
-		using original_fn = void(__thiscall*)(i_surface*, int, int, int, int);
-		return (*(original_fn * *)this)[15](this, r, g, b, a);
-	}
+	virtual_method(void, set_drawing_color(int r, int g, int b, int a = 255), 15, (this, r, g, b, a))
+	virtual_method(void, draw_filled_rectangle(int x, int y, int w, int h), 16, (this, x, y, x + w, y + h))
+	virtual_method(void, set_text_color(int r, int g, int b, int a = 255), 25, (this, r, g, b, a))
+	virtual_method(void, play_sound(const char* sound_path), 82, (this, sound_path))
+	virtual_method(void, draw_polygon(int n, vertex_t* vertice, bool clip_vertices = true), 106, (this, n, vertice, clip_vertices))
 
-	void play_sound(const char* sound_path) {
-		using original_fn = void(__thiscall*)(i_surface*, const char*);
-		return (*(original_fn * *)this)[82](this, sound_path);
-	}
-
-	void set_text_color(int r, int g, int b, int a = 255) {
-		using original_fn = void(__thiscall*)(i_surface*, int, int, int, int);
-		return (*(original_fn * *)this)[25](this, r, g, b, a);
-	}
-
-	void draw_polygon(int n, vertex_t* vertice, bool clip_vertices = true) {
-		using original_fn = void(__thiscall*)(i_surface*, int, vertex_t*, bool);
-		return (*(original_fn * *)this)[106](this, n, vertice, clip_vertices);
-	}
-	void draw_filled_rectangle(int x, int y, int w, int h) {
-		using original_fn = void(__thiscall*)(i_surface*, int, int, int, int);
-		return (*(original_fn * *)this)[16](this, x, y, x + w, y + h);
-	}
 	void set_texture(int id) {
 		using original_fn = void(__thiscall*)(i_surface*, int);
 		return (*(original_fn * *)this)[38](this, id);

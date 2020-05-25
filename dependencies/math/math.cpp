@@ -1,5 +1,7 @@
 #include "../utilities/csgo.hpp"
 
+#include "../interfaces/iv_engine_client.hpp"
+
 //aimtux
 void math::correct_movement(vec3_t old_angles, c_usercmd* cmd, float old_forwardmove, float old_sidemove) {
 	float delta_view = 0.f;
@@ -23,35 +25,15 @@ void math::correct_movement(vec3_t old_angles, c_usercmd* cmd, float old_forward
 	cmd->side_move = std::sin(degrees_to_radians(delta_view)) * old_forwardmove + std::sin(degrees_to_radians(delta_view + 90.f)) * old_sidemove;
 }
 
-vec3_t math::calculate_angle(vec3_t& a, vec3_t& b) {
-	vec3_t angles;
-	vec3_t delta;
-	delta.x = (a.x - b.x);
-	delta.y = (a.y - b.y);
-	delta.z = (a.z - b.z);
+vec3_t math::calculate_angle(const vec3_t& src, const vec3_t& dest) {
+	const vec3_t delta = src - dest;
+	vec3_t angles{ radians_to_degrees(std::atanf(delta.z / delta.length_2d())),
+				   radians_to_degrees(std::atanf(delta.y / delta.x)), 0.f };
 
-	double hyp = sqrt(delta.x * delta.x + delta.y * delta.y);
-	angles.x = (float)(atanf(delta.z / hyp) * 57.295779513082f);
-	angles.y = (float)(atanf(delta.y / delta.x) * 57.295779513082f);
+	if (delta.x >= 0.f)
+		angles.y += 180.f;
 
-	angles.z = 0.0f;
-	if (delta.x >= 0.0) { angles.y += 180.0f; }
 	return angles;
-}
-
-void math::sin_cos(float r, float* s, float* c) {
-	*s = std::sin(r);
-	*c = std::cos(r);
-}
-
-vec3_t math::angle_vector(vec3_t angle) {
-	auto sy = std::sin(angle.y / 180.f * static_cast<float>(M_PI));
-	auto cy = std::cos(angle.y / 180.f * static_cast<float>(M_PI));
-
-	auto sp = std::sin(angle.x / 180.f * static_cast<float>(M_PI));
-	auto cp = std::cos(angle.x / 180.f * static_cast<float>(M_PI));
-
-	return { cp * cy, cp * sy, -sp };
 }
 
 void math::transform_vector(const vec3_t& a, const matrix_t& b, vec3_t& out) {
@@ -75,8 +57,8 @@ void math::vector_angles(const vec3_t& in, vec3_t& angles) {
 			angles.y += 360.f;
 	}
 
-	angles.x -= std::floorf(angles.x / 360.f + .5f) * 360.f;
-	angles.y -= std::floorf(angles.y / 360.f + .5f) * 360.f;
+	angles.x -= std::floor(angles.x / 360.f + .5f) * 360.f;
+	angles.y -= std::floor(angles.y / 360.f + .5f) * 360.f;
 
 	if (angles.x > 89.f)
 		angles.x = 89.f;

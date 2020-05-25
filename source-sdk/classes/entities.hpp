@@ -4,17 +4,14 @@
 
 #include "collideable.hpp"
 #include "client_class.hpp"
-#include "../structs/animstate.hpp"
+#include "../../dependencies/interfaces/iv_model_info.hpp"
 #include "../../dependencies/math/math.hpp"
 #include "../../dependencies/utilities/netvars/netvars.hpp"
+#include "../../dependencies/utilities/virtual_method.h"
 
+struct anim_state;
 class matrix_t;
 struct weapon_info_t;
-
-enum data_update_type_t {
-	DATA_UPDATE_CREATED = 0,
-	DATA_UPDATE_DATATABLE_CHANGED,
-};
 
 enum cs_weapon_type {
 	WEAPONTYPE_KNIFE = 0,
@@ -205,7 +202,6 @@ public:
 	netvar("DT_CSPlayer", "m_iTeamNum", team, int)
 	netvar("DT_CSPlayer", "m_flSimulationTime", simulation_time, float)
 	netvar("DT_CSPlayer", "m_nSurvivalTeam", survival_team, int)
-	netvar("DT_BaseEntity", "m_hOwnerEntity", owner_handle, unsigned long)
 	netvar("DT_BaseEntity", "m_bSpotted", spotted, bool)
 	netvar("DT_BasePlayer", "m_vecOrigin", origin, vec3_t)
 	netvar("DT_BasePlayer", "m_vecViewOffset[0]", view_offset, vec3_t)
@@ -218,7 +214,7 @@ public:
 	virtual_method(c_client_class*, get_client_class(), 2, (this + 8))
 	virtual_method(bool, is_dormant(), 9, (this + 8))
 	virtual_method(int, index(), 10, (this + 8))
-	virtual_method(bool, setup_bones(matrix_t* out, int max_bones, int mask, float time), 13, (this + 8, out, max_bones, mask, time))
+	virtual_method(bool, setup_bones(matrix_t* out, int max_bones, int mask, float time), 13, (this + 4, out, max_bones, mask, time))
 };
 
 class econ_view_item_t {
@@ -347,7 +343,6 @@ public:
 	netvar("DT_BasePlayer", "m_vecVelocity[0]", velocity, vec3_t)
 	netvar("DT_BasePlayer", "m_flMaxspeed", max_speed, float)
 	netvar("DT_BaseEntity", "m_flShadowCastDistance", m_flFOVTime, float)
-	netvar("DT_BasePlayer", "m_hObserverTarget", observer_target, unsigned long)
 	netvar("DT_BasePlayer", "m_iObserverMode", observer_mode, int)
 	netvar("DT_BasePlayer", "m_nHitboxSet", hitbox_set, int)
 	netvar("DT_SmokeGrenadeProjectile", "m_nSmokeEffectTickBegin", smoke_grenade_tick_begin, int)
@@ -359,13 +354,12 @@ public:
 	virtual_method(bool, is_alive(), 155, (this))
 	virtual_method(void, update_client_side_animations(), 223, (this))
 	virtual_method(weapon_t*, get_active_weapon(), 267, (this))
-
-	player_t* get_observer_target() {
-		return reinterpret_cast<player_t*>(interfaces::entity_list->get_client_entity_handle(this->observer_target()));;
-	}
+	virtual_method(player_t*, get_observer_target(), 294, (this))
 
 	vec3_t get_eye_pos() {
-		return origin() + view_offset();
+		vec3_t vec;
+		virtual_method_handler::call<void, 284>(this, std::ref(vec));
+		return vec;
 	}
 
 	vec3_t get_hitbox_position(int i) {

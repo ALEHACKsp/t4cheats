@@ -1,5 +1,10 @@
 #include "../features.hpp"
 
+#include "../../../source-sdk/classes/entities.hpp"
+#include "../../../dependencies/interfaces/i_physics_surface_props.hpp"
+#include "../../../dependencies/interfaces/i_trace.hpp"
+#include "../../../dependencies/interfaces/i_console.hpp"
+
 #define NOMINMAX
 
 // credit to https://www.unknowncheats.me/forum/counterstrike-global-offensive/255054-autowall-convar-scaling.html for the penetration convar scaling system
@@ -284,9 +289,9 @@ bool fire_bullet(player_t* player, const vec3_t direction, float& current_damage
 	if (!weapon_data)
 		return false;
 
-	const bool sv_penetration_type = static_cast<bool>(interfaces::console->get_convar("sv_penetration_type")->numerical_value);
-	const float ff_damage_reduction_bullets = interfaces::console->get_convar("ff_damage_reduction_bullets")->float_value;
-	const float ff_damage_bullet_penetration = interfaces::console->get_convar("ff_damage_bullet_penetration")->float_value;
+	const bool sv_penetration_type = static_cast<bool>(interfaces::cvar->get_convar("sv_penetration_type")->get_int());
+	const float ff_damage_reduction_bullets = interfaces::cvar->get_convar("ff_damage_reduction_bullets")->get_float();
+	const float ff_damage_bullet_penetration = interfaces::cvar->get_convar("ff_damage_bullet_penetration")->get_float();
 	const vec3_t eye_position = player->get_eye_pos();
 
 	float penetration_power = 0.f, penetration_distance = 0.f;

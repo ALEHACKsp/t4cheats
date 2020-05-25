@@ -1,6 +1,9 @@
 #pragma once
-#include "../../source-sdk/math/vector3d.hpp"
-#include "../../source-sdk/classes/c_usercmd.hpp"
+
+#include "../utilities/virtual_method.h"
+
+struct c_usercmd;
+class player_t;
 
 struct player_move_data {
 	char pad[182]; // size of move data

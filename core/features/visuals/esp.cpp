@@ -3,6 +3,11 @@
 #define NOMINMAX
 
 #include "../features.hpp"
+#include "../../../dependencies/interfaces/c_global_vars_base.hpp"
+#include "../../../dependencies/interfaces/interfaces.hpp"
+#include "../../../dependencies/interfaces/i_surface.hpp"
+#include "../../../dependencies/interfaces/i_client_entity_list.hpp"
+#include "../../../dependencies/interfaces/iv_engine_client.hpp"
 #include "../../../source-sdk/math/vector3d.hpp"
 
 struct bounding_box {

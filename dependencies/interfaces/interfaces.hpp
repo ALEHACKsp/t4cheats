@@ -1,31 +1,31 @@
 #pragma once
 
-#include <windows.h>
-#include <cstdint>
-#include <string>
-#include <stdexcept>
+#include <memory>
+#include <sstream>
+#include <type_traits>
+#include <Windows.h>
 
-#include "i_base_client_dll.hpp"
-#include "i_client_entity_list.hpp"
-#include "iv_engine_client.hpp"
-#include "i_client_state.hpp"
-#include "i_panel.hpp"
-#include "i_surface.hpp"
-#include "c_global_vars_base.hpp"
-#include "i_material_system.hpp"
-#include "iv_model_info.hpp"
-#include "iv_model_render.hpp"
-#include "i_console.hpp"
-#include "i_game_event_manager.hpp"
-#include "i_input.hpp"
-#include "i_input_system.hpp"
-#include "i_trace.hpp"
-#include "i_player_movement.hpp"
-#include "i_weapon_system.hpp"
-#include "i_studio_render.h"
-#include "i_physics_surface_props.hpp"
-
-#include "../utilities/console/console.hpp"
+struct base_client_dll;
+struct i_input;
+class i_client_entity_list;
+class engine_client;
+class i_client_state;
+class i_panel;
+class i_surface;
+struct global_vars_base;
+class i_material_system;
+class iv_model_info;
+class iv_model_render;
+class i_studio_render;
+class i_physics_surface_props;
+class i_cvar;
+class i_game_event_manager2;
+class i_inputsytem;
+class trace;
+class player_game_movement;
+class player_prediction;
+class player_move_helper;
+class i_weapon_system;
 
 namespace interfaces {
 	void initialize();
@@ -44,7 +44,7 @@ namespace interfaces {
 	inline iv_model_render* model_render;
 	inline i_studio_render* studio_render;
 	inline i_physics_surface_props* physics_surface;
-	inline i_console* console;
+	inline i_cvar* cvar;
 	inline i_game_event_manager2* event_manager;
 	inline i_inputsytem* inputsystem;
 	inline trace* trace_ray;
