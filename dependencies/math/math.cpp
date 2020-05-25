@@ -105,38 +105,20 @@ void math::angle_vectors(const vec3_t& angles, vec3_t* forward, vec3_t * right, 
 	}
 }
 
-static D3DMATRIX view_matrix;
+bool math::world_to_screen(const vec3_t& point, vec3_t& screen) {
+	D3DMATRIX matrix = interfaces::engine->world_to_screen_matrix();
 
-bool math::screen_transform(const vec3_t& point, vec3_t& screen) {
-	view_matrix = interfaces::engine->world_to_screen_matrix();
-
-	screen.x = view_matrix.m[0][0] * point.x + view_matrix.m[0][1] * point.y + view_matrix.m[0][2] * point.z + view_matrix.m[0][3];
-	screen.y = view_matrix.m[1][0] * point.x + view_matrix.m[1][1] * point.y + view_matrix.m[1][2] * point.z + view_matrix.m[1][3];
-	screen.z = 0.f;
-
-	float w = view_matrix.m[3][0] * point.x + view_matrix.m[3][1] * point.y + view_matrix.m[3][2] * point.z + view_matrix.m[3][3];
+	float w = matrix._41 * point.x + matrix._42 * point.y + matrix._43 * point.z + matrix._44;
 
 	if (w < .001f) {
-		screen.x *= 100000.f;
-		screen.y *= 100000.f;
-		return false;
-	}
+		int width, height;
+		interfaces::engine->get_screen_size(width, height);
 
-	screen.x /= w;
-	screen.y /= w;
-
-	return true;
-}
-
-bool math::world_to_screen(const vec3_t & origin, vec3_t & screen) {
-	if (math::screen_transform(origin, screen)) {
-		int w, h;
-		interfaces::engine->get_screen_size(w, h);
-
-		screen.x = (w / 2.0f) + (screen.x * w) / 2.0f;
-		screen.y = (h / 2.0f) - (screen.y * h) / 2.0f;
+		screen.x = width / 2 * (1 + (matrix._11 * point.x + matrix._12 * point.y + matrix._13 * point.z + matrix._14) / w);
+		screen.y = height / 2 * (1 - (matrix._21 * point.x + matrix._22 * point.y + matrix._23 * point.z + matrix._24) / w);
 
 		return true;
 	}
+
 	return false;
 }

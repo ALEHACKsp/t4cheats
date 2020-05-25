@@ -2,5 +2,5 @@
 
 struct i_input {
 	char pad_0000[173];
-	bool m_fCameraInThirdPerson;
+	bool camera_is_in_thirdperson;
 };

@@ -17,6 +17,5 @@ namespace math {
 	void transform_vector(vec3_t&, matrix_t&, vec3_t&);
 	void vector_angles(vec3_t&, vec3_t&);
 	void angle_vectors(const vec3_t&, vec3_t*, vec3_t*, vec3_t*);
-	bool screen_transform(const vec3_t& point, vec3_t& screen);
 	bool world_to_screen(const vec3_t& origin, vec3_t& screen);
 };
