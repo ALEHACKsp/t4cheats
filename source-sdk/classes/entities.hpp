@@ -13,18 +13,23 @@ struct anim_state;
 class matrix_t;
 struct weapon_info_t;
 
-enum cs_weapon_type {
-	WEAPONTYPE_KNIFE = 0,
-	WEAPONTYPE_PISTOL,
-	WEAPONTYPE_SUBMACHINEGUN,
-	WEAPONTYPE_RIFLE,
-	WEAPONTYPE_SHOTGUN,
-	WEAPONTYPE_SNIPER_RIFLE,
-	WEAPONTYPE_MACHINEGUN,
-	WEAPONTYPE_C4,
-	WEAPONTYPE_PLACEHOLDER,
-	WEAPONTYPE_GRENADE,
-	WEAPONTYPE_UNKNOWN
+class collideable_t {
+public:
+	virtual_method(const vec3_t&, mins(), 1, (this))
+	virtual_method(const vec3_t&, maxs(), 2, (this))
+};
+
+enum class cs_weapon_type {
+	knife = 0,
+	pistol,
+	submachine_gun,
+	rifle,
+	shotgun,
+	sniper_rifle,
+	machine_gun,
+	c4,
+	placeholder,
+	grenade
 };
 
 enum client_frame_stage_t {
@@ -97,6 +102,7 @@ enum entity_flags {
 	fl_transragdoll = (1 << 29),
 	fl_unblockable_by_player = (1 << 30)
 };
+
 enum item_definition_indexes {
 	WEAPON_NONE = 0,
 	WEAPON_DEAGLE,

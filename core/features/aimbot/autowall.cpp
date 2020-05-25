@@ -197,11 +197,8 @@ bool handle_bullet_penetration(player_t* player, weapon_info_t* weapon_data, tra
 
 	trace_t exit;
 
-	if (possible_hits <= 0
-		|| (!possible_hits && !is_light_surf && !is_solid_surf && enter_material != CHAR_TEX_GRATE && enter_material != CHAR_TEX_GLASS)
-		|| weapon_data->flPenetration <= 0.f
-		|| !trace_to_exit(trace, exit, trace.end, direction)
-		&& !(interfaces::trace_ray->get_point_contents(trace.end, MASK_SHOT_HULL, nullptr) & MASK_SHOT_HULL))
+	if (possible_hits <= 0 || (!possible_hits && !is_light_surf && !is_solid_surf && enter_material != CHAR_TEX_GRATE && enter_material != CHAR_TEX_GLASS)
+		|| weapon_data->penetration <= 0.f || !trace_to_exit(trace, exit, trace.end, direction) && !(interfaces::trace_ray->get_point_contents(trace.end, MASK_SHOT_HULL, nullptr) & MASK_SHOT_HULL))
 		return false;
 
 	const auto exit_surface_data = interfaces::physics_surface->get_surface_data(exit.surface.surface_props);
@@ -295,10 +292,10 @@ bool fire_bullet(player_t* player, const vec3_t direction, float& current_damage
 	const vec3_t eye_position = player->get_eye_pos();
 
 	float penetration_power = 0.f, penetration_distance = 0.f;
-	get_bullet_type(sv_penetration_type, penetration_power, penetration_distance, weapon_data->szBulletType);
+	get_bullet_type(sv_penetration_type, penetration_power, penetration_distance, weapon_data->bullet_type);
 
 	if (sv_penetration_type)
-		penetration_power = weapon_data->flPenetration;
+		penetration_power = weapon_data->penetration;
 
 	int possible_hits = 4;
 	float current_distance = 0.f;
@@ -307,10 +304,10 @@ bool fire_bullet(player_t* player, const vec3_t direction, float& current_damage
 	trace_filter filter;
 	filter.skip = player;
 
-	current_damage = weapon_data->iDamage;
+	current_damage = weapon_data->damage;
 
 	while (possible_hits > 0 && current_damage >= 1.f) {
-		const float max_range = weapon_data->flRange - current_distance;
+		const float max_range = weapon_data->range - current_distance;
 		const vec3_t end = eye_position + direction * max_range;
 
 		trace_line(eye_position, end, MASK_SHOT_HULL | CONTENTS_HITBOX, player, &trace);
@@ -320,13 +317,13 @@ bool fire_bullet(player_t* player, const vec3_t direction, float& current_damage
 			break;
 
 		current_distance += trace.flFraction * max_range;
-		current_damage *= std::pow(weapon_data->flRangeModifier, (current_distance / 500.f));
+		current_damage *= std::pow(weapon_data->range_modifier, (current_distance / 500.f));
 
-		if (current_distance > penetration_distance && weapon_data->flPenetration > 0.f || interfaces::physics_surface->get_surface_data(trace.surface.surface_props)->game_props.penetration_modifier < .1f)
+		if (current_distance > penetration_distance && weapon_data->penetration > 0.f || interfaces::physics_surface->get_surface_data(trace.surface.surface_props)->game_props.penetration_modifier < .1f)
 			break;
 
 		if ((trace.hitGroup != hitgroup::chest && trace.hitGroup != hitgroup::generic) && trace.entity->is_enemy(csgo::local_player)) {
-			scale_damage(trace, weapon_data->flArmorRatio, current_damage);
+			scale_damage(trace, weapon_data->armor_ratio, current_damage);
 			return true;
 		}
 

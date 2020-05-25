@@ -287,7 +287,7 @@ enum class_ids {
 	sporetrail,
 };
 
-class client_class;
+class c_client_class;
 class entity_t;
 class recv_table;
 

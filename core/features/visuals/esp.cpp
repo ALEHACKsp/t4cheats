@@ -114,7 +114,7 @@ static void draw_weapon(const bounding_box& box, player_t* player) {
 	const int ammo = weapon->ammo();
 
 	std::string weapon_text = weapon->get_weapon_name();
-	if (weapon_data->WeaponType != cs_weapon_type::WEAPONTYPE_KNIFE)
+	if (weapon_data->type != cs_weapon_type::knife)
 		weapon_text.append(" [").append(std::to_string(ammo)).append("/").append(std::to_string(weapon->primary_reserve_ammo_acount())).append("]");
 
 	const int y = box.max.y + 1 + (variables::visuals::esp_show_healthbar * 11);
