@@ -3,6 +3,7 @@
 
 #include "netvars.hpp"
 #include "../../interfaces/interfaces.hpp"
+#include "../../../source-sdk/classes/client_class.hpp"
 
 namespace netvar_manager {
 	using netvar_key_value_map = std::unordered_map< uint32_t, uintptr_t >;
@@ -25,7 +26,7 @@ namespace netvar_manager {
 	}
 
 	void add_props_for_table(netvar_table_map & table_map, const uint32_t table_name_hash, const std::string & table_name, recv_table * table, const bool dump_vars, std::map< std::string, std::map< uintptr_t, std::string > > & var_dump, const size_t child_offset = 0) {
-		for (auto i = 0; i < table->props_count; ++i) {
+		for (auto i = 0; i < table->prop_count; ++i) {
 			auto& prop = table->props[i];
 
 			if (prop.data_table && prop.elements_count > 0) {
@@ -54,9 +55,9 @@ namespace netvar_manager {
 		const auto dump_vars = true;  //true if netvar dump
 
 		std::map< std::string, std::map< uintptr_t, std::string > > var_dump;
-		for (auto client_class = interfaces::client->get_client_classes(); client_class; client_class = client_class->next_ptr) {
-			const auto table = reinterpret_cast<recv_table*>(client_class->recvtable_ptr);
-			const auto table_name = table->table_name;
+		for (auto client_class = interfaces::client->get_client_classes(); client_class; client_class = client_class->next) {
+			const auto table = reinterpret_cast<recv_table*>(client_class->recv_table);
+			const auto table_name = table->net_table_name;
 			const auto table_name_hash = fnv::hash(table_name);
 
 			if (table == nullptr)

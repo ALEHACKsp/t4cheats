@@ -27,7 +27,6 @@ void interfaces::initialize() {
 	model_render = find_interface(iv_model_render, "engine", "VEngineModel016");
 	studio_render = find_interface(i_studio_render, "studiorender", "VStudioRender026");
 	physics_surface = find_interface(i_physics_surface_props, "vphysics", "VPhysicsSurfaceProps001");
-	render_view = find_interface(i_render_view, "engine", "VEngineRenderView014");
 	console = find_interface(i_console, "vstdlib", "VEngineCvar007");
 	event_manager = find_interface(i_game_event_manager2, "engine", "GAMEEVENTSMANAGER002");
 	inputsystem = find_interface(i_inputsytem, "inputsystem", "InputSystemVersion001");

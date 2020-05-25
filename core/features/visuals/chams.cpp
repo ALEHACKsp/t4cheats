@@ -2,8 +2,8 @@
 #include "../../../dependencies/interfaces/i_studio_render.h"
 
 static void override_material(bool ignorez, bool flat, const color& color) {
-	static const auto material_shaded = interfaces::material_system->find_material("debug/debugambientcube", TEXTURE_GROUP_MODEL);
-	static const auto material_flat = interfaces::material_system->find_material("debug/debugdrawflat", TEXTURE_GROUP_MODEL);
+	static const auto material_shaded = interfaces::material_system->find_material("debug/debugambientcube");
+	static const auto material_flat = interfaces::material_system->find_material("debug/debugdrawflat");
 
 	const auto material = flat ? material_flat : material_shaded;
 

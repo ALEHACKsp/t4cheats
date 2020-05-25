@@ -56,12 +56,12 @@ public:
 	int elements_count;
 	const char* parent_array_prop_name;
 };
-class recv_table {
-public:
+
+struct recv_table {
 	recv_prop* props;
-	int props_count;
-	void* decoder_ptr;
-	char* table_name;
+	int prop_count;
+	void* decoder;
+	char* net_table_name;
 	bool is_initialized;
 	bool is_in_main_list;
 };

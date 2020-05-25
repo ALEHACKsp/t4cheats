@@ -20,7 +20,6 @@
 #include "i_input.hpp"
 #include "i_input_system.hpp"
 #include "i_trace.hpp"
-#include "i_render_view.hpp"
 #include "i_player_movement.hpp"
 #include "i_weapon_system.hpp"
 #include "i_studio_render.h"
@@ -45,7 +44,6 @@ namespace interfaces {
 	inline iv_model_render* model_render;
 	inline i_studio_render* studio_render;
 	inline i_physics_surface_props* physics_surface;
-	inline i_render_view* render_view;
 	inline i_console* console;
 	inline i_game_event_manager2* event_manager;
 	inline i_inputsytem* inputsystem;

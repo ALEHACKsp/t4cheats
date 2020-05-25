@@ -295,7 +295,7 @@ struct c_client_class {
 	std::add_pointer_t<entity_t* __cdecl(int, int)> create_fn;
 	void* create_event_fn;
 	char* network_name;
-	recv_table* recvtable_ptr;
-	c_client_class* next_ptr;
+	recv_table* recv_table;
+	c_client_class* next;
 	class_ids class_id;
 };

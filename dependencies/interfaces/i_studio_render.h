@@ -1,7 +1,11 @@
 #pragma once
-#include "i_material_system.hpp"
-#include <cstddef>
+
 #include <string_view>
+#include <type_traits>
+
+#include "../utilities/virtual_method.h"
+
+class i_material;
 
 enum class override_type {
 	normal = 0,
@@ -16,11 +20,9 @@ class i_studio_render {
 	i_material* material_override;
 	std::byte pad_1[0xC];
 	override_type override_type;
+
 public:
-	void forced_material_override(i_material* material, ::override_type type = override_type::normal, int index = -1) {
-		using fn = void(__thiscall*)(void*, i_material*, ::override_type, int);
-		return (*(fn**)this)[33](this, material, type, index);
-	}
+	virtual_method(void, forced_material_override(i_material* material, ::override_type type = override_type::normal, int index = -1), 33, (this, material, type, index))
 
 	bool is_force_material_override() {
 		if (!material_override)
