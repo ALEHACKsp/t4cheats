@@ -119,7 +119,6 @@
     <ClCompile Include="dependencies\utilities\renderer\renderer.cpp" />
     <ClCompile Include="dependencies\utilities\utilities.cpp" />
     <ClCompile Include="core\main.cpp" />
-    <ClCompile Include="source-sdk\math\view_matrix.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="core\features\features.hpp" />
@@ -195,7 +194,6 @@
     <ClInclude Include="source-sdk\math\utl_vector.hpp" />
     <ClInclude Include="source-sdk\math\vector2d.hpp" />
     <ClInclude Include="source-sdk\math\vector3d.hpp" />
-    <ClInclude Include="source-sdk\math\view_matrix.hpp" />
     <ClInclude Include="source-sdk\misc\color.hpp" />
     <ClInclude Include="source-sdk\sdk.hpp" />
     <ClInclude Include="source-sdk\structs\animstate.hpp" />
