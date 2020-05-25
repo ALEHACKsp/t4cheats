@@ -1,12 +1,11 @@
 #include "interfaces.hpp"
 #include "../utilities/csgo.hpp"
 
-static void* find(const wchar_t* module, const char* name)
-{
+static void* find(const wchar_t* module, const char* name) {
 	if (const auto createInterface = reinterpret_cast<std::add_pointer_t<void* __cdecl (const char* name, int* returnCode)>>(GetProcAddress(GetModuleHandleW(module), "CreateInterface"))) {
 		if (void* foundInterface = createInterface(name, nullptr)) {
-			if (char moduleName[64]; WideCharToMultiByte(CP_UTF8, 0, module, -1, moduleName, 128, nullptr, nullptr))
-				console::log("[hook] % hook initialized at module %", std::string(name), moduleName);
+			// if (char moduleName[64]; WideCharToMultiByte(CP_UTF8, 0, module, -1, moduleName, 128, nullptr, nullptr))
+			//	std::printf("[hook] %s hook initialized at module %s\n", std::string(name), std::string(moduleName));
 
 			return foundInterface;
 		}
