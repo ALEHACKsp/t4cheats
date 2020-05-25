@@ -54,7 +54,7 @@ vec3_t math::angle_vector(vec3_t angle) {
 	return { cp * cy, cp * sy, -sp };
 }
 
-void math::transform_vector(vec3_t & a, matrix_t & b, vec3_t & out) {
+void math::transform_vector(const vec3_t& a, const matrix_t& b, vec3_t& out) {
 	out.x = a.dot(b[0]) + b[0][3];
 	out.y = a.dot(b[1]) + b[1][3];
 	out.z = a.dot(b[2]) + b[2][3];
@@ -105,12 +105,18 @@ void math::angle_vectors(const vec3_t& angles, vec3_t* forward, vec3_t * right, 
 	}
 }
 
+static D3DMATRIX view_matrix;
+
+void math::update_view_matrix() {
+	view_matrix = interfaces::engine->world_to_screen_matrix();
+}
+
 bool math::world_to_screen(const vec3_t& point, vec3_t& screen) {
-	D3DMATRIX matrix = interfaces::engine->world_to_screen_matrix();
+	const D3DMATRIX& matrix = view_matrix;
 
 	float w = matrix._41 * point.x + matrix._42 * point.y + matrix._43 * point.z + matrix._44;
 
-	if (w < .001f) {
+	if (w > .001f) {
 		int width, height;
 		interfaces::engine->get_screen_size(width, height);
 

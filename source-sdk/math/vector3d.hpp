@@ -7,6 +7,13 @@ constexpr double M_PI = 3.14159265358979323846;
 constexpr float M_RADPI = 57.295779513082f;
 constexpr float M_PI_F = static_cast<float>(M_PI);
 
+class matrix_t {
+	float mat_val[3][4];
+public:
+	float* operator[](int i) { return mat_val[i]; }
+	const float* operator[](int i) const { return mat_val[i]; }
+};
+
 struct vec3_t {
 	vec3_t& operator+=(const vec3_t& v) {
 		x += v.x;
@@ -108,12 +115,11 @@ struct vec3_t {
 		return x * fl[0] + y * fl[1] + z * fl[2];
 	}
 
-	float x, y, z;
-};
+	vec3_t transform(const matrix_t& mat) const {
+		return { dot({ mat[0][0], mat[0][1], mat[0][2] }) + mat[0][3],
+				 dot({ mat[1][0], mat[1][1], mat[1][2] }) + mat[1][3],
+				 dot({ mat[2][0], mat[2][1], mat[2][2] }) + mat[2][3] };
+	}
 
-class matrix_t {
-	float mat_val[3][4];
-public:
-	float* operator[](int i) { return mat_val[i]; }
-	const float* operator[](int i) const { return mat_val[i]; }
+	float x, y, z;
 };

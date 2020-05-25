@@ -1,6 +1,50 @@
+#include <limits>
+
 #include "../features.hpp"
 
 #include "../../../source-sdk/math/vector3d.hpp"
+
+#undef max;
+
+struct bounding_box {
+private:
+	bool valid;
+public:
+	vec3_t min, max;
+	vec3_t vertices[8];
+
+	bounding_box(entity_t* entity) {
+		min.y = min.x = std::numeric_limits<float>::max();
+		max.y = max.x = -std::numeric_limits<float>::max();
+
+		const auto collideable = entity->get_collideable();
+		const vec3_t obb_mins = collideable->mins();
+		const vec3_t obb_maxs = collideable->maxs();
+
+		const matrix_t coordinate_frame = entity->coordinate_frame();
+
+		for (int i = 0; i < 8; ++i) {
+			const vec3_t point{ i & 1 ? obb_maxs.x : obb_mins.x,
+								i & 2 ? obb_maxs.y : obb_mins.y,
+								i & 4 ? obb_maxs.z : obb_mins.z };
+
+			if (!math::world_to_screen(point.transform(coordinate_frame), vertices[i])) {
+				valid = false;
+				return;
+			}
+
+			min.x = std::min<float>(min.x, vertices[i].x);
+			min.y = std::min<float>(min.y, vertices[i].y);
+			max.x = std::max<float>(max.x, vertices[i].x);
+			max.y = std::max<float>(max.y, vertices[i].y);
+		}
+		valid = true;
+	}
+
+	operator bool() const {
+		return valid;
+	}
+};
 
 RECT get_bounds(entity_t* entity) {
 	const auto collideable = entity->get_collideable();
@@ -57,20 +101,7 @@ RECT get_bounds(entity_t* entity) {
 	return { static_cast<LONG>(left), static_cast<LONG>(bottom), static_cast<LONG>(right), static_cast<LONG>(top) };
 }
 
-color get_color_from_health(int health, int alpha = 255)
-{
-	return color(255 - (health * 2.55f), health * 2.55f, 0, alpha);
-}
-
 RECT bbox;
-/*
-	BOX DIMENSIONS
-
-	left = x-coordinate top
-	top = y-coordinate top
-	right = x-coordinate bottom
-	bottom = y-coordinate bottom
-*/
 
 void draw_name(player_t* player) {
 	static wchar_t name[128]; player_info_t info;
@@ -101,21 +132,27 @@ void draw_name(player_t* player) {
 	render::draw_line(bbox.left + ((bbox.right - bbox.left) * .5f) - (width * .5f), bbox.top - 18, bbox.left + ((bbox.right - bbox.left) * .5f) - (width * .5f) + width, bbox.top - 18, player->team() == 2 ? color(190, 160, 60, 200) : color(60, 120, 190, 200));
 }
 
-void draw_box() {
-	render::draw_outline(bbox.left, bbox.top, bbox.right - bbox.left, bbox.bottom - bbox.top, color::black(150));
+static void draw_box(const bounding_box& box) {
+	render::draw_outline(box.min.x, box.min.y, box.max.x - box.min.x, box.max.y - box.min.y, color::black(150));
 }
 
-void draw_healthbar(player_t* player) {
-	auto health = player->health();
-	auto health_width = (56 * health) / 100;
-	auto y = bbox.bottom + 1; //haha, i love doing stuff like this
-	render::draw_filled_rect(bbox.left + ((bbox.right - bbox.left) * .5f) - 39, y, 78, 10, color(50, 50, 50, 150));
-	render::draw_outline(bbox.left + ((bbox.right - bbox.left) * .5f) - 39, y, 78, 10, color(25, 25, 25, 150));
-	render::draw_text_string(bbox.left + ((bbox.right - bbox.left) * .5f) - 36, y - 1, render::fonts::pixel, "HP:", false, color(240, 240, 240, 200));
-	render::draw_outline(bbox.left + ((bbox.right - bbox.left) * .5f) - 22, y + 3, 58, 4, color(15, 15, 15, 150));
-	render::draw_filled_rect(bbox.left + ((bbox.right - bbox.left) * .5f) - 21, y + 4, health_width, 2, get_color_from_health(health, 200));
+static color get_color_from_health(int health, int alpha = 255) {
+	return color(255 - (health * 2.55f), health * 2.55f, 0, alpha);
+}
+
+static void draw_healthbar(const bounding_box& box, player_t* player) {
+	const int health = player->health();
+	const int health_width = (56 * health) / 100;
+	const int y = box.max.y + 1;
+
+	render::draw_filled_rect(box.min.x + ((box.max.x - box.min.x) * .5f) - 39, y, 78, 10, color(50, 50, 50, 150));
+	render::draw_outline(box.min.x + ((box.max.x - box.min.x) * .5f) - 39, y, 78, 10, color(25, 25, 25, 150));
+	render::draw_text_string(box.min.x + ((box.max.x - box.min.x) * .5f) - 36, y - 1, render::fonts::pixel, "HP:", false, color(240, 240, 240, 200));
+	render::draw_outline(box.min.x + ((box.max.x - box.min.x) * .5f) - 22, y + 3, 58, 4, color(15, 15, 15, 150));
+	render::draw_filled_rect(box.min.x + ((box.max.x - box.min.x) * .5f) - 21, y + 4, health_width, 2, get_color_from_health(health, 200));
+
 	if (health < 100)
-		render::draw_text_string(bbox.left + ((bbox.right - bbox.left) * .5f) - 21 + health_width, y - 1, render::fonts::pixel_shadow, std::to_string(health), true, color(240, 240, 240, 200));
+		render::draw_text_string(box.min.x + ((box.max.x - box.min.x) * .5f) - 21 + health_width, y - 1, render::fonts::pixel_shadow, std::to_string(health), true, color(240, 240, 240, 200));
 }
 
 void draw_weapon(player_t* player) {
@@ -140,26 +177,34 @@ void draw_headdot(player_t* player, color color) {
 
 void visuals::esp::draw() {
 	for (int i = 1; i < interfaces::global_vars->max_clients; i++) {
-		auto entity = reinterpret_cast<player_t*>(interfaces::entity_list->get_client_entity(i));
-		if (!entity || !entity->is_player() || entity->is_dormant() || !entity->is_alive() || entity == csgo::local_player) //dont draw esp for localplayer for now
+		const auto player = reinterpret_cast<player_t*>(interfaces::entity_list->get_client_entity(i));
+		if (!player || player == csgo::local_player == player->is_dormant() || !player->is_alive() || (variables::visuals::esp_enemies_only && !player->is_enemy(csgo::local_player)))
 			continue;
 
-		if (variables::visuals::esp_enemies_only && !entity->is_enemy(csgo::local_player))
-			continue;
-
-		bbox = get_bounds(entity);
+		bbox = get_bounds(player);
 		if (bbox.right == 0 || bbox.bottom == 0) //if box is out of bounds, skip
 			continue;
 
 		if (variables::visuals::esp_show_name)
-			draw_name(entity);
-		if (variables::visuals::esp_show_box)
-			draw_box();
-		if (variables::visuals::esp_show_healthbar)
-			draw_healthbar(entity);
+			draw_name(player);
 		if (variables::visuals::esp_show_weapon)
-			draw_weapon(entity);
+			draw_weapon(player);
 		if (variables::visuals::esp_show_headdot)
-			draw_headdot(entity, color::white(200));
+			draw_headdot(player, color::white(200));
+	}
+
+	for (int i = 1; i < interfaces::global_vars->max_clients; ++i) {
+		const auto player = reinterpret_cast<player_t*>(interfaces::entity_list->get_client_entity(i));
+		if (!player || player == csgo::local_player || player->is_dormant() || !player->is_alive() || (variables::visuals::esp_enemies_only && !player->is_enemy(csgo::local_player)))
+			continue;
+
+		const bounding_box box{ player };
+		if (!box)
+			continue;
+
+		if (variables::visuals::esp_show_box)
+			draw_box(box);
+		if (variables::visuals::esp_show_healthbar)
+			draw_healthbar(box, player);
 	}
 }

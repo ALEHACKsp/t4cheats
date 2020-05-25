@@ -1,6 +1,6 @@
 #pragma once
 
-#pragma pack(push, 1)
+#include "../../source-sdk/math/vector3d.hpp"
 
 class i_net_channel_info {
 public:
@@ -16,7 +16,6 @@ public:
 	int32_t choked_packets;   //0x002C number of choked packets
 	char pad_0030[1044];      //0x0030
 };
-
 
 class i_client_state {
 public:
@@ -64,5 +63,3 @@ public:
 		delta_tick = -1;
 	}
 };
-
-#pragma pack(pop)

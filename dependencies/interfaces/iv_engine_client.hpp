@@ -1,13 +1,8 @@
 #pragma once
 
 #include <cstdint>
+#include <d3d9types.h>
 
-#include "../../source-sdk/math/vector3d.hpp"
-#include "../../source-sdk/math/vector2d.hpp"
-#include "../../source-sdk/math/view_matrix.hpp"
-#include "../../source-sdk/classes/net_channel.hpp"
-
-#include "../utilities/utilities.hpp"
 #include "../utilities/virtual_method.h"
 
 struct player_info_t {

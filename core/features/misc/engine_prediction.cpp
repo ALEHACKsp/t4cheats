@@ -1,4 +1,7 @@
 #include "engine_prediction.hpp"
+#include "../../../dependencies/utilities/csgo.hpp"
+
+static player_move_data move_data;
 
 void prediction::start(c_usercmd* cmd) {
 	if (!prediction_random_seed)
@@ -14,11 +17,11 @@ void prediction::start(c_usercmd* cmd) {
 
 	interfaces::game_movement->start_track_prediction_errors(csgo::local_player);
 
-	std::memset(&data, 0, sizeof(data));
+	std::memset(&move_data, 0, sizeof(move_data));
 	interfaces::move_helper->set_host(csgo::local_player);
-	interfaces::prediction->setup_move(csgo::local_player, cmd, interfaces::move_helper, &data);
-	interfaces::game_movement->process_movement(csgo::local_player, &data);
-	interfaces::prediction->finish_move(csgo::local_player, cmd, &data);
+	interfaces::prediction->setup_move(csgo::local_player, cmd, interfaces::move_helper, &move_data);
+	interfaces::game_movement->process_movement(csgo::local_player, &move_data);
+	interfaces::prediction->finish_move(csgo::local_player, cmd, &move_data);
 }
 
 void prediction::end() {

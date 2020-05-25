@@ -33,6 +33,13 @@ LRESULT __stdcall wnd_proc(HWND window, UINT message, WPARAM wparam, LPARAM lpar
 	if (GetAsyncKeyState(VK_PRIOR)) // page up to uninject
 		hooks::release();
 
+	static float last_data_gather = 0.f;
+	if (last_data_gather != interfaces::global_vars->realtime) {
+		math::update_view_matrix();
+
+		last_data_gather = interfaces::global_vars->realtime;
+	}
+
 	LRESULT ImGui_ImplWin32_WndProcHandler(HWND window, UINT message, WPARAM wparam, LPARAM lparam);
 	ImGui_ImplWin32_WndProcHandler(window, message, wparam, lparam);
 	interfaces::inputsystem->enable_input(!variables::menu::opened);
