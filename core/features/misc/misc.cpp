@@ -61,15 +61,15 @@ void misc::movement::bunny_hop(c_usercmd* cmd) { //any public source, was alread
 
 	if (!last_jumped && should_fake) {
 		should_fake = false;
-		cmd->buttons |= in_jump;
+		cmd->buttons |= c_usercmd::buttons::in_jump;
 	}
-	else if (cmd->buttons & in_jump) {
+	else if (cmd->buttons & c_usercmd::buttons::in_jump) {
 		if (csgo::local_player->flags() & fl_onground) {
 			last_jumped = true;
 			should_fake = true;
 		}
 		else {
-			cmd->buttons &= ~in_jump;
+			cmd->buttons &= ~c_usercmd::buttons::in_jump;
 			last_jumped = false;
 		}
 	}

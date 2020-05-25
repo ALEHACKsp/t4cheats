@@ -166,7 +166,6 @@
     <ClInclude Include="dependencies\interfaces\interfaces.hpp" />
     <ClInclude Include="dependencies\interfaces\i_panel.hpp" />
     <ClInclude Include="dependencies\interfaces\i_surface.hpp" />
-    <ClInclude Include="dependencies\interfaces\iv_debug_overlay.hpp" />
     <ClInclude Include="dependencies\interfaces\iv_engine_client.hpp" />
     <ClInclude Include="dependencies\interfaces\iv_model_info.hpp" />
     <ClInclude Include="dependencies\interfaces\iv_model_render.hpp" />

@@ -15,7 +15,6 @@
 #include "i_material_system.hpp"
 #include "iv_model_info.hpp"
 #include "iv_model_render.hpp"
-#include "iv_debug_overlay.hpp"
 #include "i_console.hpp"
 #include "i_game_event_manager.hpp"
 #include "i_input.hpp"
@@ -36,7 +35,7 @@ namespace interfaces {
 	inline i_input* input;
 	inline i_client_entity_list* entity_list;
 	inline engine_client* engine;
-	inline i_client_mode* clientmode;
+	inline void* clientmode;
 	inline i_client_state* clientstate;
 	inline i_panel* panel;
 	inline i_surface* surface;
@@ -47,7 +46,6 @@ namespace interfaces {
 	inline i_studio_render* studio_render;
 	inline i_physics_surface_props* physics_surface;
 	inline i_render_view* render_view;
-	inline iv_debug_overlay* debug_overlay;
 	inline i_console* console;
 	inline i_game_event_manager2* event_manager;
 	inline i_inputsytem* inputsystem;

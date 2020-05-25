@@ -42,7 +42,6 @@ class IVertexBuffer;
 class IIndexBuffer;
 struct MaterialSystem_Config_t;
 class VMatrix;
-class matrix3x4_t;
 class ITexture;
 struct MaterialSystemHWID_t;
 class KeyValues;

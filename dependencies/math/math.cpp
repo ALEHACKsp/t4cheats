@@ -4,12 +4,12 @@
 void math::correct_movement(vec3_t old_angles, c_usercmd* cmd, float old_forwardmove, float old_sidemove) {
 	float delta_view = 0.f;
 	float f1 = old_angles.y;
-	float f2 = cmd->viewangles.y;
+	float f2 = cmd->view_angles.y;
 
 	if (old_angles.y < 0.f)
 		f1 += 360.f;
 
-	if (cmd->viewangles.y < 0.0f)
+	if (cmd->view_angles.y < 0.f)
 		f2 += 360.f;
 
 	if (f2 < f1)
@@ -19,8 +19,8 @@ void math::correct_movement(vec3_t old_angles, c_usercmd* cmd, float old_forward
 
 	delta_view = 360.f - delta_view;
 
-	cmd->forwardmove = std::cos(degrees_to_radians(delta_view)) * old_forwardmove + std::cos(degrees_to_radians(delta_view + 90.f)) * old_sidemove;
-	cmd->sidemove = std::sin(degrees_to_radians(delta_view)) * old_forwardmove + std::sin(degrees_to_radians(delta_view + 90.f)) * old_sidemove;
+	cmd->forward_move = std::cos(degrees_to_radians(delta_view)) * old_forwardmove + std::cos(degrees_to_radians(delta_view + 90.f)) * old_sidemove;
+	cmd->side_move = std::sin(degrees_to_radians(delta_view)) * old_forwardmove + std::sin(degrees_to_radians(delta_view + 90.f)) * old_sidemove;
 }
 
 vec3_t math::calculate_angle(vec3_t& a, vec3_t& b) {

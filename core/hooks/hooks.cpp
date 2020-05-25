@@ -91,23 +91,23 @@ BOOL WINAPI set_cursor_pos(int x, int y) {
 bool __stdcall create_move(int input_sample_frametime, c_usercmd* cmd) {
 	const bool result = hooks::original_create_move(interfaces::clientmode, input_sample_frametime, cmd);
 
-	if (!cmd || !cmd->command_number)
+	if (!cmd->command_number)
 		return result;
-
-	csgo::local_player = reinterpret_cast<player_t*>(interfaces::entity_list->get_client_entity(interfaces::engine->get_local_player()));
 
 	std::uintptr_t* frame_pointer;
 	__asm mov frame_pointer, ebp;
 	bool& send_packet = *reinterpret_cast<bool*>(*frame_pointer - 0x1C);
 
-	float old_forwardmove = cmd->forwardmove;
-	float old_sidemove = cmd->sidemove;
-	vec3_t old_viewangles = cmd->viewangles;
+	csgo::local_player = reinterpret_cast<player_t*>(interfaces::entity_list->get_client_entity(interfaces::engine->get_local_player()));
+
+	const float old_forwardmove = cmd->forward_move;
+	const float old_sidemove = cmd->side_move;
+	const vec3_t old_viewangles = cmd->view_angles;
 
 	const bool is_alive = csgo::local_player->is_alive();
 
 	misc::movement::bunny_hop(cmd);
-	if (csgo::local_player && is_alive)
+	if (is_alive)
 		anti_aim::desync(cmd, send_packet);
 
 	if (variables::misc::clantag_spammer_enable)
@@ -124,14 +124,14 @@ bool __stdcall create_move(int input_sample_frametime, c_usercmd* cmd) {
 
 	math::correct_movement(old_viewangles, cmd, old_forwardmove, old_sidemove);
 
-	cmd->forwardmove = std::clamp(cmd->forwardmove, -450.f, 450.f);
-	cmd->sidemove = std::clamp(cmd->sidemove, -450.f, 450.f);
-	cmd->upmove = std::clamp(cmd->sidemove, -320.f, 320.f);
+	cmd->forward_move = std::clamp(cmd->forward_move, -450.f, 450.f);
+	cmd->side_move = std::clamp(cmd->side_move, -450.f, 450.f);
+	cmd->up_move = std::clamp(cmd->up_move, -320.f, 320.f);
 
-	cmd->viewangles.normalize();
-	cmd->viewangles.x = std::clamp(cmd->viewangles.x, -89.0f, 89.0f);
-	cmd->viewangles.y = std::clamp(cmd->viewangles.y, -180.0f, 180.0f);
-	cmd->viewangles.z = 0.0f;
+	cmd->view_angles.normalize();
+	cmd->view_angles.x = std::clamp(cmd->view_angles.x, -89.f, 89.f);
+	cmd->view_angles.y = std::clamp(cmd->view_angles.y, -180.f, 180.f);
+	cmd->view_angles.z = 0.0f;
 
 	return false;
 }

@@ -1,12 +1,6 @@
 #pragma once
-#include "recv_props.hpp"
 
-class client_class;
-class i_client_networkable;
-class i_client_mode;
-
-typedef i_client_networkable* (*create_client_class_fn)(int ent_number, int serial_number);
-typedef i_client_networkable* (*create_event_fn)();
+#include <type_traits>
 
 enum class_ids {
 	cai_basenpc = 0,
@@ -293,10 +287,13 @@ enum class_ids {
 	sporetrail,
 };
 
-class c_client_class {
-public:
-	create_client_class_fn create_fn;
-	create_event_fn create_event_fn;
+class client_class;
+class entity_t;
+class recv_table;
+
+struct c_client_class {
+	std::add_pointer_t<entity_t* __cdecl(int, int)> create_fn;
+	void* create_event_fn;
 	char* network_name;
 	recv_table* recvtable_ptr;
 	c_client_class* next_ptr;

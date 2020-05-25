@@ -1,13 +1,11 @@
 #include "interfaces.hpp"
 #include "../utilities/csgo.hpp"
 
-static void* find(const wchar_t* module, const char* name) {
-	if (const auto createInterface = reinterpret_cast<std::add_pointer_t<void* __cdecl (const char* name, int* returnCode)>>(GetProcAddress(GetModuleHandleW(module), "CreateInterface"))) {
-		if (void* foundInterface = createInterface(name, nullptr)) {
-			// if (char moduleName[64]; WideCharToMultiByte(CP_UTF8, 0, module, -1, moduleName, 128, nullptr, nullptr))
-			//	std::printf("[hook] %s hook initialized at module %s\n", std::string(name), std::string(moduleName));
-
-			return foundInterface;
+static void* find(const char* module, const char* name) {
+	if (const auto create_interface = reinterpret_cast<std::add_pointer_t<void* __cdecl (const char* name, int* returnCode)>>(GetProcAddress(GetModuleHandle(module), "CreateInterface"))) {
+		if (void* found_interface = create_interface(name, nullptr)) {
+			std::printf("[hook] %s hook initialized at module %s\n", name, module);
+			return found_interface;
 		}
 	}
 
@@ -16,7 +14,7 @@ static void* find(const wchar_t* module, const char* name) {
 }
 
 #define find_interface(type, module, version) \
-reinterpret_cast<type*>(find(L##module, version));
+reinterpret_cast<type*>(find(##module, version));
 
 void interfaces::initialize() {
 	client = find_interface(base_client_dll, "client_panorama", "VClient018");
@@ -32,13 +30,12 @@ void interfaces::initialize() {
 	render_view = find_interface(i_render_view, "engine", "VEngineRenderView014");
 	console = find_interface(i_console, "vstdlib", "VEngineCvar007");
 	event_manager = find_interface(i_game_event_manager2, "engine", "GAMEEVENTSMANAGER002");
-	debug_overlay = find_interface(iv_debug_overlay, "engine", "VDebugOverlay004");
 	inputsystem = find_interface(i_inputsytem, "inputsystem", "InputSystemVersion001");
 	trace_ray = find_interface(trace, "engine", "EngineTraceClient004");
 	game_movement = find_interface(player_game_movement, "client_panorama", "GameMovement001");
 	prediction = find_interface(player_prediction, "client_panorama", "VClientPrediction001");
 
-	clientmode = **reinterpret_cast<i_client_mode***>((*reinterpret_cast<std::uintptr_t**>(client))[10] + 5);
+	clientmode = **reinterpret_cast<void***>((*reinterpret_cast<std::uintptr_t**>(client))[10] + 5);
 	global_vars = **reinterpret_cast<global_vars_base***>((*reinterpret_cast<std::uintptr_t**>(client))[11] + 10);
 	input = *reinterpret_cast<i_input**>((*reinterpret_cast<std::uintptr_t**>(client))[16] + 1);
 
