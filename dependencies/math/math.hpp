@@ -15,7 +15,7 @@ namespace math {
 	void sin_cos(float r, float* s, float* c);
 	vec3_t angle_vector(vec3_t angle);
 	void transform_vector(const vec3_t&, const matrix_t&, vec3_t&);
-	void vector_angles(vec3_t&, vec3_t&);
+	void vector_angles(const vec3_t& in, vec3_t& out);
 	void angle_vectors(const vec3_t&, vec3_t*, vec3_t* = nullptr, vec3_t* = nullptr);
 
 	void update_view_matrix();

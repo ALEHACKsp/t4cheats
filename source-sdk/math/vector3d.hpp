@@ -8,10 +8,10 @@ constexpr float M_RADPI = 57.295779513082f;
 constexpr float M_PI_F = static_cast<float>(M_PI);
 
 class matrix_t {
-	float mat_val[3][4];
+	float mat[3][4];
 public:
-	float* operator[](int i) { return mat_val[i]; }
-	const float* operator[](int i) const { return mat_val[i]; }
+	float* operator[](int i) { return mat[i]; }
+	const float* operator[](int i) const { return mat[i]; }
 };
 
 struct vec3_t {

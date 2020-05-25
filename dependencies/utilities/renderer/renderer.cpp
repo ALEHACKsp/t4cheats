@@ -1,5 +1,10 @@
 #include "renderer.hpp"
 
+#include "../utilities.hpp"
+#include "../../interfaces/interfaces.hpp"
+#include "../../math/math.hpp"
+#include "../../../dependencies/interfaces/i_surface.hpp"
+
 void render::initialize() {
 	render::fonts::main = interfaces::surface->font_create();
 	render::fonts::pixel = interfaces::surface->font_create();
@@ -12,15 +17,15 @@ void render::initialize() {
 	console::log("[setup] render initialized!\n");
 }
 
-void render::draw_line(int x1, int y1, int x2, int y2, color colour) {
-	interfaces::surface->set_drawing_color(colour.r, colour.g, colour.b, colour.a);
+void render::draw_line(int x1, int y1, int x2, int y2, const color& c) {
+	interfaces::surface->set_drawing_color(c.r, c.g, c.b, c.a);
 	interfaces::surface->draw_line(x1, y1, x2, y2);
 }
 
-void render::draw_text_wchar(int x, int y, unsigned long font, const wchar_t* string, bool text_centered, color colour) {
+void render::draw_text_wchar(int x, int y, unsigned long font, const wchar_t* string, bool text_centered, const color& c) {
 	int width, height;
 	interfaces::surface->get_text_size(font, string, width, height);
-	interfaces::surface->set_text_color(colour.r, colour.g, colour.b, colour.a);
+	interfaces::surface->set_text_color(c.r, c.g, c.b, c.a);
 	interfaces::surface->draw_text_font(font);
 	if (text_centered)
 		interfaces::surface->draw_text_pos(x - (width / 2), y);
@@ -29,49 +34,47 @@ void render::draw_text_wchar(int x, int y, unsigned long font, const wchar_t* st
 	interfaces::surface->draw_render_text(string, wcslen(string));
 }
 
-void render::draw_text_string(int x, int y, unsigned long font, std::string string, bool text_centered, color colour) {
+void render::draw_text_string(int x, int y, unsigned long font, std::string string, bool text_centered, const color& c) {
 	const auto converted_text = std::wstring(string.begin(), string.end());
 
 	int width, height;
 	interfaces::surface->get_text_size(font, converted_text.c_str(), width, height);
 
-	interfaces::surface->set_text_color(colour.r, colour.g, colour.b, colour.a);
+	interfaces::surface->set_text_color(c.r, c.g, c.b, c.a);
 	interfaces::surface->draw_text_font(font);
-	if (text_centered)
-		interfaces::surface->draw_text_pos(x - (width / 2), y);
-	else
-		interfaces::surface->draw_text_pos(x, y);
+	interfaces::surface->draw_text_pos(text_centered ? x - (width / 2) : x, y);
+
 	interfaces::surface->draw_render_text(converted_text.c_str(), wcslen(converted_text.c_str()));
 }
 
-void render::draw_rect(int x, int y, int w, int h, color color) {
-	interfaces::surface->set_drawing_color(color.r, color.g, color.b, color.a);
+void render::draw_rect(int x, int y, int w, int h, const color& c) {
+	interfaces::surface->set_drawing_color(c.r, c.g, c.b, c.a);
 	interfaces::surface->draw_outlined_rect(x, y, w, h);
 }
 
-void render::draw_filled_rect(int x, int y, int w, int h, color colour) {
-	interfaces::surface->set_drawing_color(colour.r, colour.g, colour.b, colour.a);
+void render::draw_filled_rect(int x, int y, int w, int h, const color& c) {
+	interfaces::surface->set_drawing_color(c.r, c.g, c.b, c.a);
 	interfaces::surface->draw_filled_rectangle(x, y, w, h);
 }
 
-void render::draw_outline(int x, int y, int w, int h, color colour) {
-	interfaces::surface->set_drawing_color(colour.r, colour.g, colour.b, colour.a);
+void render::draw_outline(int x, int y, int w, int h, const color& c) {
+	interfaces::surface->set_drawing_color(c.r, c.g, c.b, c.a);
 	interfaces::surface->draw_outlined_rect(x, y, w, h);
 }
 
-void render::draw_textured_polygon(int n, vertex_t* vertice, color col) {
+void render::draw_textured_polygon(int n, vertex_t* vertice, const color& c) {
 	static unsigned char buf[4] = { 255, 255, 255, 255 };
 	unsigned int texture_id{};
 	if (!texture_id) {
 		texture_id = interfaces::surface->create_new_texture_id(true);
 		interfaces::surface->set_texture_rgba(texture_id, buf, 1, 1);
 	}
-	interfaces::surface->set_drawing_color(col.r, col.g, col.b, col.a);
+	interfaces::surface->set_drawing_color(c.r, c.g, c.b, c.a);
 	interfaces::surface->set_texture(texture_id);
 	interfaces::surface->draw_polygon(n, vertice);
 }
 
-void render::draw_circle(int x, int y, int r, int s, color col) {
+void render::draw_circle(int x, int y, int r, int s, const color& c) {
 	float Step = M_PI * 2.f / s;
 
 	for (float a = 0; a < (M_PI * 2.0); a += Step) {
@@ -79,7 +82,7 @@ void render::draw_circle(int x, int y, int r, int s, color col) {
 		float y1 = r * sin(a) + y;
 		float x2 = r * cos(a + Step) + x;
 		float y2 = r * sin(a + Step) + y;
-		interfaces::surface->set_drawing_color(col.r, col.g, col.b, col.a);
+		interfaces::surface->set_drawing_color(c.r, c.g, c.b, c.a);
 		interfaces::surface->draw_line(x1, y1, x2, y2);
 	}
 }
@@ -103,14 +106,14 @@ void render::draw_circle_3d(int x, int y, int z, int r, int s, color col, bool r
 	}
 }
 
-void render::draw_xhair(int x, int y, bool outline, color col) {
+void render::draw_xhair(int x, int y, bool outline, const color& c) {
 	if (outline) {
-		interfaces::surface->set_drawing_color(0, 0, 0, col.a);
+		interfaces::surface->set_drawing_color(0, 0, 0, c.a);
 		interfaces::surface->draw_filled_rectangle(x - 3, y - 1, 7, 3);
 		interfaces::surface->draw_filled_rectangle(x - 1, y - 3, 3, 7);
 	}
 
-	interfaces::surface->set_drawing_color(col.r, col.g, col.b, col.a);
+	interfaces::surface->set_drawing_color(c.r, c.g, c.b, c.a);
 	interfaces::surface->draw_filled_rectangle(x - 2, y, 5, 1);
 	interfaces::surface->draw_filled_rectangle(x, y - 2, 1, 5);
 }
@@ -123,17 +126,17 @@ color gradient(color Input, color Input2, float fraction) {
 		((Input.a - Input2.a) * fraction) + Input2.a);
 }
 
-void render::draw_gradient(color col, color col2, int x, int y, int w, int h, bool orientation = true) {
-	if (orientation) {
-		for (int i = 0; i < w; i++) {
-			color draw_color = gradient(col, col2, (float)i / w);
+void render::draw_gradient(const color& c1, const color& c2, int x, int y, int w, int h, bool horizontal) {
+	if (horizontal) {
+		for (int i = 0; i < w; ++i) {
+			color draw_color = gradient(c1, c2, static_cast<float>(i / w));
 			interfaces::surface->set_drawing_color(draw_color.r, draw_color.g, draw_color.b, draw_color.a);
 			interfaces::surface->draw_filled_rectangle(x + i, y, 1, h);
 		}
 	}
 	else {
-		for (int i = 0; i < h; i++) {
-			color draw_color = gradient(col, col2, (float)i / h);
+		for (int i = 0; i < h; ++i) {
+			color draw_color = gradient(c1, c2, static_cast<float>(i / h));
 			interfaces::surface->set_drawing_color(draw_color.r, draw_color.g, draw_color.b, draw_color.a);
 			interfaces::surface->draw_filled_rectangle(x, y + i, w, 1);
 		}

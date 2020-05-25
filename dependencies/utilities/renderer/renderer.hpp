@@ -1,5 +1,6 @@
 #pragma once
-#include "../../utilities/csgo.hpp"
+
+#include <string>
 
 enum font_flags {
 	fontflag_none,
@@ -14,23 +15,27 @@ enum font_flags {
 	fontflag_additive = 0x100,
 	fontflag_outline = 0x200,
 	fontflag_custom = 0x400,
-	fontflag_bitmap = 0x800,
+	fontflag_bitmap = 0x800
 };
+
+struct color;
+struct vec2_t;
+struct vertex_t;
 
 namespace render {
 	void initialize();
 
-	void draw_line(int x1, int y1, int x2, int y2, color colour);
-	void draw_text_wchar(int x, int y, unsigned long font, const wchar_t* string, bool text_centered, color colour);
-	void draw_text_string(int x, int y, unsigned long font, std::string string, bool text_centered, color colour);
-	void draw_rect(int x, int y, int w, int h, color color);
-	void draw_filled_rect(int x, int y, int w, int h, color colour);
-	void draw_outline(int x, int y, int w, int h, color colour);
-	void draw_textured_polygon(int n, vertex_t* vertice, color col);
-	void draw_circle(int x, int y, int r, int s, color col);
+	void draw_line(int x1, int y1, int x2, int y2, const color& c);
+	void draw_text_wchar(int x, int y, unsigned long font, const wchar_t* string, bool text_centered, const color& c);
+	void draw_text_string(int x, int y, unsigned long font, std::string string, bool text_centered, const color& c);
+	void draw_rect(int x, int y, int w, int h, const color& c);
+	void draw_filled_rect(int x, int y, int w, int h, const color& c);
+	void draw_outline(int x, int y, int w, int h, const color& c);
+	void draw_textured_polygon(int n, vertex_t* vertice, const color& c);
+	void draw_circle(int x, int y, int r, int s, const color& c);
 	void draw_circle_3d(int x, int y, int z, int r, int s, color col, bool rainbow);
-	void draw_xhair(int x, int y, bool outline, color col);
-	void draw_gradient(color col, color col2, int x, int y, int w, int h, bool orientation);
+	void draw_xhair(int x, int y, bool outline, const color& c);
+	void draw_gradient(const color& c1, const color& c2, int x, int y, int w, int h, bool horizontal = true);
 	vec2_t get_text_size(unsigned long font, std::string text);
 
 	namespace fonts {

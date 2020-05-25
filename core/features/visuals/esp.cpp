@@ -1,9 +1,9 @@
 #include <limits>
 
+#define NOMINMAX
+
 #include "../features.hpp"
 #include "../../../source-sdk/math/vector3d.hpp"
-
-#undef max;
 
 struct bounding_box {
 private:
@@ -49,8 +49,7 @@ static void draw_box(const bounding_box& box) {
 	render::draw_outline(box.min.x, box.min.y, box.max.x - box.min.x, box.max.y - box.min.y, color::white(150));
 }
 
-/*
-void draw_name(player_t* player) {
+static void draw_name(const bounding_box& box, player_t* player) {
 	player_info_t info;
 	if (!interfaces::engine->get_player_info(player->index(), &info))
 		return;
@@ -67,20 +66,19 @@ void draw_name(player_t* player) {
 
 	if (wchar_t name[128]; MultiByteToWideChar(CP_UTF8, 0, string_name.c_str(), -1, name, 128)) {
 		interfaces::surface->get_text_size(render::fonts::main, name, wname_dimensions[0], wname_dimensions[1]);
-		render::draw_text_wchar(bbox.left + ((bbox.right - bbox.left) * .5f) - (info.fake_player ? (render::get_text_size(render::fonts::pixel, "[BOT]").x / 2) + 2 : 0), bbox.top - 16, render::fonts::main, name, true, color(255, 255, 255, 200));
+		render::draw_text_wchar(box.min.x + ((box.max.x - box.min.x) * .5f) - (info.fake_player ? (render::get_text_size(render::fonts::pixel, "[BOT]").x / 2) + 2 : 0), box.min.y - 16, render::fonts::main, name, true, color(255, 255, 255, 200));
 		width += wname_dimensions[0];
 	}
 
 	if (info.fake_player) {
 		width += render::get_text_size(render::fonts::pixel, "[BOT]").x;
-		render::draw_text_string(bbox.left + ((bbox.right - bbox.left) * .5f) - (width * .5f) + wname_dimensions[0] + 6, bbox.top - 15, render::fonts::pixel, "[BOT]", false, color(200, 200, 200, 200));
+		render::draw_text_string(box.min.x + ((box.max.x - box.min.x) * .5f) - (width * .5f) + wname_dimensions[0] + 6, box.min.y - 15, render::fonts::pixel, "[BOT]", false, color(200, 200, 200, 200));
 	}
 
-	render::draw_filled_rect(bbox.left + ((bbox.right - bbox.left) * .5f) - (width * .5f), bbox.top - 18, width, wname_dimensions[1] + 4, color(50, 50, 50, 150));
-	render::draw_outline(bbox.left + ((bbox.right - bbox.left) * .5f) - (width * .5f), bbox.top - 18, width, wname_dimensions[1] + 4, color(25, 25, 25, 150));
-	render::draw_line(bbox.left + ((bbox.right - bbox.left) * .5f) - (width * .5f), bbox.top - 18, bbox.left + ((bbox.right - bbox.left) * .5f) - (width * .5f) + width, bbox.top - 18, player->team() == 2 ? color(190, 160, 60, 200) : color(60, 120, 190, 200));
+	render::draw_filled_rect(box.min.x + ((box.max.x - box.min.x) * .5f) - (width * .5f), box.min.y - 18, width, wname_dimensions[1] + 4, color(50, 50, 50, 150));
+	render::draw_outline(box.min.x + ((box.max.x - box.min.x) * .5f) - (width * .5f), box.min.y - 18, width, wname_dimensions[1] + 4, color(25, 25, 25, 150));
+	render::draw_line(box.min.x + ((box.max.x - box.min.x) * .5f) - (width * .5f), box.min.y - 18, box.min.x + ((box.max.x - box.min.x) * .5f) - (width * .5f) + width, box.min.y - 18, player->team() == 2 ? color(190, 160, 60, 200) : color(60, 120, 190, 200));
 }
-*/
 
 static color get_color_from_health(int health, int alpha = 255) {
 	return color(255 - (health * 2.55f), health * 2.55f, 0, alpha);
@@ -139,8 +137,8 @@ void visuals::esp::draw() {
 
 		if (variables::visuals::esp_show_box)
 			draw_box(box);
-		// if (variables::visuals::esp_show_name)
-		//	draw_name(player);
+		if (variables::visuals::esp_show_name)
+			draw_name(box, player);
 		if (variables::visuals::esp_show_healthbar)
 			draw_healthbar(box, player);
 		if (variables::visuals::esp_show_weapon)

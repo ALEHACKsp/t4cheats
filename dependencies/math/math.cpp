@@ -60,24 +60,28 @@ void math::transform_vector(const vec3_t& a, const matrix_t& b, vec3_t& out) {
 	out.z = a.dot(b[2]) + b[2][3];
 }
 
-void math::vector_angles(vec3_t & forward, vec3_t & angles) {
-	if (forward.y == 0.0f && forward.x == 0.0f) {
-		angles.x = (forward.z > 0.0f) ? 270.0f : 90.0f;
-		angles.y = 0.0f;
+void math::vector_angles(const vec3_t& in, vec3_t& angles) {
+	if (in.y == 0.f && in.x == 0.f) {
+		angles.x = in.z > 0.f ? 270.f : 90.f;
+		angles.y = 0.f;
 	}
 	else {
-		angles.x = atan2(-forward.z, vec2_t(forward).length()) * -180 / static_cast<float>(M_PI);
-		angles.y = atan2(forward.y, forward.x) * 180 / static_cast<float>(M_PI);
+		angles.x = radians_to_degrees(std::atan2(-in.z, in.length_2d()));
+		angles.y = radians_to_degrees(std::atan2(in.y, in.x));
 
-		if (angles.y > 90)
-			angles.y -= 180;
-		else if (angles.y < 90)
-			angles.y += 180;
-		else if (angles.y == 90)
-			angles.y = 0;
+		if (angles.x < 0.f)
+			angles.x += 360.f;
+		if (angles.y < 0.f)
+			angles.y += 360.f;
 	}
 
-	angles.z = 0.0f;
+	angles.x -= std::floorf(angles.x / 360.f + .5f) * 360.f;
+	angles.y -= std::floorf(angles.y / 360.f + .5f) * 360.f;
+
+	if (angles.x > 89.f)
+		angles.x = 89.f;
+	else if (angles.x < -89.f)
+		angles.x = -89.f;
 }
 
 void math::angle_vectors(const vec3_t& angles, vec3_t* forward, vec3_t * right, vec3_t * up) {
