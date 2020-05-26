@@ -1,11 +1,14 @@
 #include "engine_prediction.hpp"
 
+#include "../../../dependencies/interfaces/c_global_vars_base.hpp"
 #include "../../../dependencies/interfaces/interfaces.hpp"
 #include "../../../dependencies/interfaces/i_player_movement.hpp"
-#include "../../../dependencies/interfaces/c_global_vars_base.hpp"
-#include "../../../dependencies/utilities/utilities.hpp"
 #include "../../../dependencies/utilities/csgo.hpp"
+#include "../../../dependencies/utilities/utilities.hpp"
 
+static int* prediction_random_seed;
+static float old_cur_time;
+static float old_frame_time;
 static player_move_data move_data;
 
 void prediction::start(c_usercmd* cmd) {

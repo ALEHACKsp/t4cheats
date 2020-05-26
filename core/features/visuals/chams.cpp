@@ -5,13 +5,18 @@
 #include "../../../dependencies/interfaces/i_client_entity_list.hpp"
 #include "../../../dependencies/interfaces/iv_model_render.hpp"
 #include "../../../dependencies/interfaces/i_studio_render.h"
+#include "../../../source-sdk/classes/key_values.h"
 #include "../../../source-sdk/structs/materials.hpp"
 
-static void override_material(bool ignorez, bool flat, const color& color) {
-	static const auto material_shaded = interfaces::material_system->find_material("debug/debugambientcube");
-	static const auto material_flat = interfaces::material_system->find_material("debug/debugdrawflat");
+static std::vector<i_material*> materials;
 
-	const auto material = flat ? material_flat : material_shaded;
+void visuals::chams::initialize() {
+	materials.emplace_back(interfaces::material_system->create_material("normal", key_values::from_string("VertexLitGeneric", nullptr)));
+	materials.emplace_back(interfaces::material_system->create_material("flat", key_values::from_string("UnlitGeneric", nullptr)));
+}
+
+static void override_material(bool ignorez, bool flat, const color& color) {
+	const auto material = flat ? materials[1] : materials[0];
 
 	// change the color, alpha, and set whether to render through walls
 	material->color_modulate(color.r / 255.f, color.g / 255.f, color.b / 255.f);

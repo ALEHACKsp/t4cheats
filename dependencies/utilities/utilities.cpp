@@ -68,10 +68,10 @@ std::string utilities::get_time_as_string() {
 
 	localtime_s(&time, &now);
 
-	std::ostringstream oss;
-	oss << std::put_time(&time, "%H:%M:%S");
+	char buffer[80];
+	std::strftime(buffer, sizeof(buffer), "%H:%M:%S", &time);
 
-	return oss.str();
+	return std::string{ buffer };
 }
 
 color utilities::color_from_hsv(int H, float S, float V) {

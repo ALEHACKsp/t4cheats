@@ -119,6 +119,8 @@
     <ClCompile Include="dependencies\utilities\renderer\renderer.cpp" />
     <ClCompile Include="dependencies\utilities\utilities.cpp" />
     <ClCompile Include="core\main.cpp" />
+    <ClCompile Include="source-sdk\classes\key_values.cpp" />
+    <ClCompile Include="source-sdk\classes\key_values.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="core\features\features.hpp" />

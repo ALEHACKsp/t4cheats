@@ -1,6 +1,8 @@
 #include "../features.hpp"
 
 void anti_aim::desync(c_usercmd* cmd, bool& send_packet) {
+	return; // temporary
+
 	static bool desync_side = true;
 	const float side_amount = (csgo::local_player->flags() & entity_flags::fl_ducking) ? 3.25f : 1.1f;
 

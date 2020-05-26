@@ -24,8 +24,6 @@ LRESULT __stdcall wnd_proc(HWND window, UINT message, WPARAM wparam, LPARAM lpar
 		ImGui::CreateContext();
 		ImGui_ImplWin32_Init(window);
 
-		menu::init();
-
 		try {
 			hooks::hook_methods();
 		}
@@ -33,6 +31,9 @@ LRESULT __stdcall wnd_proc(HWND window, UINT message, WPARAM wparam, LPARAM lpar
 			FreeConsole();
 			FreeLibraryAndExitThread(module, 0);
 		}
+
+		visuals::chams::initialize();
+		menu::init();
 
 		return true;
 	}(window);
