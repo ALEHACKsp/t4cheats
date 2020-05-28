@@ -6,9 +6,9 @@
 #include "../../math/math.hpp"
 #include "../../../dependencies/interfaces/i_surface.hpp"
 #include "../../../source-sdk/misc/color.hpp"
+#include "../../../source-sdk/math/vector2d.hpp"
 #include "../../../source-sdk/math/vector3d.hpp"
 
-struct vec2_t;
 
 void render::initialize() {
 	render::fonts::main = interfaces::surface->font_create();
@@ -80,9 +80,9 @@ void render::draw_textured_polygon(int n, vertex_t* vertice, const color& c) {
 }
 
 void render::draw_circle(int x, int y, int r, int s, const color& c) {
-	const float step = static_cast<float>(M_PI) * 2.f / s;
+	const float step = static_cast<float>(m_pi) * 2.f / s;
 
-	for (float a = 0.f; a < static_cast<float>(M_PI) * 2.f; a += step) {
+	for (float a = 0.f; a < static_cast<float>(m_pi) * 2.f; a += step) {
 		const float x1 = r * std::cos(a) + x;
 		const float y1 = r * std::sin(a) + y;
 		const float x2 = r * std::cos(a + step) + x;
@@ -94,12 +94,14 @@ void render::draw_circle(int x, int y, int r, int s, const color& c) {
 }
 
 void render::draw_circle_3d(int x, int y, int z, int r, int s, color col, bool rainbow) {
-	float step = M_PI * 2.0 / s;
-	for (float a = 0; a < (M_PI * 2.0); a += step) {
-		int deg = a * (180 / M_PI);
+	float step = static_cast<float>(m_pi) * 2.f / s;
+
+	for (float a = 0; a < (static_cast<float>(m_pi) * 2.f); a += step) {
+		int deg = static_cast<int>(a * (180.f / static_cast<float>(m_pi)));
 		vec3_t v_start{ r * cosf(a) + x, r * sinf(a) + y, z };
 		vec3_t v_end{ r * cosf(a + step) + x, r * sinf(a + step) + y, z };
-		vec3_t w2s_start, w2s_end;
+		vec2_t w2s_start, w2s_end;
+
 		if (math::world_to_screen(v_start, w2s_start) && math::world_to_screen(v_end, w2s_end)) {
 			if (rainbow) {
 				color drawing_color = utilities::color_from_hsv(deg, 1.f, 1.f);
@@ -107,6 +109,7 @@ void render::draw_circle_3d(int x, int y, int z, int r, int s, color col, bool r
 			}
 			else
 				interfaces::surface->set_drawing_color(col.r, col.g, col.b, col.a);
+
 			interfaces::surface->draw_line(w2s_start.x, w2s_start.y, w2s_end.x, w2s_end.y);
 		}		
 	}

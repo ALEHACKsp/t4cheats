@@ -107,7 +107,7 @@ void draw_spectator_list(int x, int y) {
 }
 
 void draw_fire_timer(inferno_t* entity) {
-	vec3_t screen_pos;
+	vec2_t screen_pos;
 
 	if (!math::world_to_screen(entity->origin(), screen_pos))
 		return;

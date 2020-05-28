@@ -1,6 +1,43 @@
 #include "../utilities/csgo.hpp"
+#include "../../dependencies/interfaces/iv_engine_client.hpp"
+#include "../../source-sdk/math/vector2d.hpp"
+#include "../../source-sdk/math/vector3d.hpp"
 
-#include "../interfaces/iv_engine_client.hpp"
+void math::angle_vectors(const vec3_t& angles, vec3_t* forward, vec3_t* right, vec3_t* up) {
+	const float radians_x = degrees_to_radians(angles.x);
+	const float radians_y = degrees_to_radians(angles.y);
+
+	const float sp = std::sin(radians_x);
+	const float cp = std::cos(radians_x);
+	const float sy = std::sin(radians_y);
+	const float cy = std::cos(radians_y);
+
+	*forward = { cp * cy,  cp * sy, -sp };
+
+	if (right || up) {
+		const float radians_z = degrees_to_radians(angles.z);
+
+		const float sr = std::sin(radians_z);
+		const float cr = std::cos(radians_z);
+
+		if (right)
+			*right = { -1.f * sr * sp * cy + -1.f * cr * -sy, -1.f * sr * sp * sy + -1.f * cr * cy, -1.f * sr * cp };
+
+		if (up)
+			*up = { cr * sp * cy + -sr * -sy, cr * sp * sy + -sr * cy, cr * cp };
+	}
+}
+
+vec3_t math::calculate_angle(const vec3_t& src, const vec3_t& dest) {
+	const vec3_t delta = src - dest;
+	vec3_t angles{ radians_to_degrees(std::atanf(delta.z / delta.length_2d())),
+				   radians_to_degrees(std::atanf(delta.y / delta.x)), 0.f };
+
+	if (delta.x >= 0.f)
+		angles.y += 180.f;
+
+	return angles;
+}
 
 //aimtux
 void math::correct_movement(vec3_t old_angles, c_usercmd* cmd, float old_forwardmove, float old_sidemove) {
@@ -25,21 +62,16 @@ void math::correct_movement(vec3_t old_angles, c_usercmd* cmd, float old_forward
 	cmd->side_move = std::sin(degrees_to_radians(delta_view)) * old_forwardmove + std::sin(degrees_to_radians(delta_view + 90.f)) * old_sidemove;
 }
 
-vec3_t math::calculate_angle(const vec3_t& src, const vec3_t& dest) {
-	const vec3_t delta = src - dest;
-	vec3_t angles{ radians_to_degrees(std::atanf(delta.z / delta.length_2d())),
-				   radians_to_degrees(std::atanf(delta.y / delta.x)), 0.f };
-
-	if (delta.x >= 0.f)
-		angles.y += 180.f;
-
-	return angles;
-}
-
 void math::transform_vector(const vec3_t& a, const matrix_t& b, vec3_t& out) {
 	out.x = a.dot(b[0]) + b[0][3];
 	out.y = a.dot(b[1]) + b[1][3];
 	out.z = a.dot(b[2]) + b[2][3];
+}
+
+static D3DMATRIX view_matrix;
+
+void math::update_view_matrix() {
+	view_matrix = interfaces::engine->world_to_screen_matrix();
 }
 
 void math::vector_angles(const vec3_t& in, vec3_t& angles) {
@@ -66,48 +98,17 @@ void math::vector_angles(const vec3_t& in, vec3_t& angles) {
 		angles.x = -89.f;
 }
 
-void math::angle_vectors(const vec3_t& angles, vec3_t* forward, vec3_t * right, vec3_t * up) {
-	const float radians_x = degrees_to_radians(angles.x);
-	const float radians_y = degrees_to_radians(angles.y);
-
-	const float sp = std::sin(radians_x);
-	const float cp = std::cos(radians_x);
-	const float sy = std::sin(radians_y);
-	const float cy = std::cos(radians_y);
-
-	*forward = vec3_t{ cp * cy,  cp * sy, -sp };
-
-	if (right || up) {
-		const float radians_z = degrees_to_radians(angles.z);
-
-		const float sr = std::sin(radians_z);
-		const float cr = std::cos(radians_z);
-
-		if (right)
-			*right = vec3_t{ -1.f * sr * sp * cy + -1.f * cr * -sy, -1.f * sr * sp * sy + -1.f * cr * cy, -1.f * sr * cp };
-
-		if (up)
-			*up = vec3_t{ cr * sp * cy + -sr * -sy, cr * sp * sy + -sr * cy, cr * cp };
-	}
-}
-
-static D3DMATRIX view_matrix;
-
-void math::update_view_matrix() {
-	view_matrix = interfaces::engine->world_to_screen_matrix();
-}
-
-bool math::world_to_screen(const vec3_t& point, vec3_t& screen) {
+bool math::world_to_screen(const vec3_t& in, vec2_t& out) {
 	const D3DMATRIX& matrix = view_matrix;
 
-	float w = matrix._41 * point.x + matrix._42 * point.y + matrix._43 * point.z + matrix._44;
+	float w = matrix._41 * in.x + matrix._42 * in.y + matrix._43 * in.z + matrix._44;
 
 	if (w > .001f) {
 		int width, height;
 		interfaces::engine->get_screen_size(width, height);
 
-		screen.x = width / 2 * (1 + (matrix._11 * point.x + matrix._12 * point.y + matrix._13 * point.z + matrix._14) / w);
-		screen.y = height / 2 * (1 - (matrix._21 * point.x + matrix._22 * point.y + matrix._23 * point.z + matrix._24) / w);
+		out.x = width / 2 * (1 + (matrix._11 * in.x + matrix._12 * in.y + matrix._13 * in.z + matrix._14) / w);
+		out.y = height / 2 * (1 - (matrix._21 * in.x + matrix._22 * in.y + matrix._23 * in.z + matrix._24) / w);
 
 		return true;
 	}

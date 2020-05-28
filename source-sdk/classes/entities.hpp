@@ -376,10 +376,8 @@ public:
 				if (!setup_bones(bone_matrix, MAXSTUDIOBONES, BONE_USED_BY_HITBOX, 0.f))
 					return { };
 
-				vec3_t min, max;
-
-				math::transform_vector(hitbox->mins, bone_matrix[hitbox->bone], min);
-				math::transform_vector(hitbox->maxs, bone_matrix[hitbox->bone], max);
+				vec3_t min = hitbox->mins.transform(bone_matrix[hitbox->bone]);
+				vec3_t max = hitbox->maxs.transform(bone_matrix[hitbox->bone]);
 
 				return (min + max) * .5f;
 			}

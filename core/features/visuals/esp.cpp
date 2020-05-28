@@ -8,14 +8,16 @@
 #include "../../../dependencies/interfaces/i_surface.hpp"
 #include "../../../dependencies/interfaces/i_client_entity_list.hpp"
 #include "../../../dependencies/interfaces/iv_engine_client.hpp"
+#include "../../../source-sdk/classes/entities.hpp"
+#include "../../../source-sdk/math/vector2d.hpp"
 #include "../../../source-sdk/math/vector3d.hpp"
 
 struct bounding_box {
 private:
 	bool valid;
 public:
-	vec3_t min, max;
-	vec3_t vertices[8];
+	vec2_t min, max;
+	vec2_t vertices[8];
 
 	bounding_box(entity_t* entity) {
 		min.y = min.x = std::numeric_limits<float>::max();
@@ -126,7 +128,7 @@ static void draw_weapon(const bounding_box& box, player_t* player) {
 }
 
 static void draw_headdot(player_t* player) {
-	if (vec3_t screen_head_pos; math::world_to_screen(player->get_hitbox_position(hitbox_head), screen_head_pos))
+	if (vec2_t screen_head_pos; math::world_to_screen(player->get_hitbox_position(hitbox_head), screen_head_pos))
 		render::draw_xhair(screen_head_pos.x, screen_head_pos.y, true, color::white(200));
 }
 
