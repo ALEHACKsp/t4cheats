@@ -1,5 +1,8 @@
 # t4cheats [![C++](https://img.shields.io/badge/language-C%2B%2B-%23f34b7d.svg)](https://en.wikipedia.org/wiki/C%2B%2B)
-Another Counter-Strike: Global Offensive Hack
+Another Counter-Strike: Global Offensive Hack 
+
+# contribution
+If you want to add a feature or suggest a change in the code, feel free to fork this project and create a pull request!
 
 # discord
 [Here](https://discord.gg/pWbBmfe) is the link to the official t4cheats discord server.
