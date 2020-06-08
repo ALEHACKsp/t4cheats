@@ -152,7 +152,7 @@ struct renderable_info {
 };
 
 int __fastcall list_leaves_in_box(void* ecx, void*, const vec3_t& mins, const vec3_t& maxs, unsigned short* list, int list_max) {
-	static const auto list_leaves = utilities::pattern_scan("client_panorama.dll", "56 52 FF 50 18") + 5;
+	static const auto list_leaves = utilities::pattern_scan("client.dll", "56 52 FF 50 18") + 5;
 
 	if (variables::visuals::chams_enable && std::uintptr_t(_ReturnAddress()) == *list_leaves) {
 		if (auto info = *reinterpret_cast<renderable_info**>(std::uintptr_t(_AddressOfReturnAddress()) + 0x14); info && info->renderable) {

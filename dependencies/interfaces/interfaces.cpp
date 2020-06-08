@@ -17,8 +17,8 @@ static void* find(const char* module, const char* name) {
 reinterpret_cast<type*>(find(##module, version));
 
 void interfaces::initialize() {
-	client = find_interface(base_client_dll, "client_panorama", "VClient018");
-	entity_list = find_interface(i_client_entity_list, "client_panorama.dll", "VClientEntityList003");
+	client = find_interface(base_client_dll, "client", "VClient018");
+	entity_list = find_interface(i_client_entity_list, "client.dll", "VClientEntityList003");
 	engine = find_interface(engine_client, "engine.dll", "VEngineClient014");
 	panel = find_interface(i_panel, "vgui2.dll", "VGUI_Panel009");
 	surface = find_interface(i_surface, "vguimatsurface", "VGUI_Surface031");
@@ -31,16 +31,16 @@ void interfaces::initialize() {
 	event_manager = find_interface(i_game_event_manager2, "engine", "GAMEEVENTSMANAGER002");
 	inputsystem = find_interface(i_inputsytem, "inputsystem", "InputSystemVersion001");
 	trace_ray = find_interface(trace, "engine", "EngineTraceClient004");
-	game_movement = find_interface(player_game_movement, "client_panorama", "GameMovement001");
-	prediction = find_interface(player_prediction, "client_panorama", "VClientPrediction001");
+	game_movement = find_interface(player_game_movement, "client", "GameMovement001");
+	prediction = find_interface(player_prediction, "client", "VClientPrediction001");
 
 	clientmode = **reinterpret_cast<void***>((*reinterpret_cast<std::uintptr_t**>(client))[10] + 5);
 	global_vars = **reinterpret_cast<global_vars_base***>((*reinterpret_cast<std::uintptr_t**>(client))[11] + 10);
 	input = *reinterpret_cast<i_input**>((*reinterpret_cast<std::uintptr_t**>(client))[16] + 1);
 
 	clientstate = **(i_client_state ***)(utilities::pattern_scan("engine.dll", sig_client_state) + 1);
-	move_helper = **(player_move_helper***)(utilities::pattern_scan("client_panorama.dll", sig_player_move_helper) + 2);
-	weapon_system = *(i_weapon_system**)(utilities::pattern_scan("client_panorama.dll", sig_weapon_data) + 2);
+	move_helper = **(player_move_helper***)(utilities::pattern_scan("client.dll", sig_player_move_helper) + 2);
+	weapon_system = *(i_weapon_system**)(utilities::pattern_scan("client.dll", sig_weapon_data) + 2);
 
 	console::log("[setup] interfaces initialized!\n");
 }
