@@ -353,7 +353,7 @@ public:
 	netvar("DT_BasePlayer", "m_nHitboxSet", hitbox_set, int)
 	netvar("DT_SmokeGrenadeProjectile", "m_nSmokeEffectTickBegin", smoke_grenade_tick_begin, int)
 
-	offset(anim_state*, animstate, 0x3900)
+	offset(anim_state*, animstate, 0x3914)
 	offset(float, spawn_time, 0xA360)
 
 	virtual_method(vec3_t&, get_abs_origin(), 10, (this))
